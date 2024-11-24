@@ -15,6 +15,32 @@ BLEED_CHANCE = 0.03
 POISON_CHANCE = 0.05
 SHADOW_CHANCE = 0.05
 
+BIOME_ABBREVIATIONS = {
+    "Veilmarsh": "v",
+    "Shattered Plains": "sp",
+    "Obsidian Dunes": "od",
+    "Gloom Peaks": "SR",
+    "Cinderglade": "cg"
+}
+
+BIOME_PLANTS_ABBREVIATIONS = {
+    "fiber": "f",
+    "carrot": "c",
+    "leaves": "l",
+    "resin": "r",
+    "pea": "p",
+    "fissure pulp": "fp",
+    "shards": "s",
+    "essence": "e",
+    "frostshard wood": "fw",
+    "kale": "k",
+    "crystal": "cry",
+    "broccoli": "b",
+    "emberbark": "eb",
+    "asparagus": "a",
+    "radishes": "r"
+}
+
 class BountySystem:
     def __init__(self):
         # Define creature types and their base rewards
@@ -1452,7 +1478,7 @@ class Battle:
 
         # Define plants available in each biome
         biome_plants = {
-            "vl": {
+            "veilmarsh": {
                 "Fiber": 0.7,
                 "Carrots": 0.7,
                 "Leaves": 0.3
