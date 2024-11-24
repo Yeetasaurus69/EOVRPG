@@ -16,29 +16,29 @@ POISON_CHANCE = 0.05
 SHADOW_CHANCE = 0.05
 
 BIOME_ABBREVIATIONS = {
-    "Veilmarsh": "v",
-    "Shattered Plains": "sp",
-    "Obsidian Dunes": "od",
-    "Gloom Peaks": "SR",
-    "Cinderglade": "cg"
+    "Veilmarsh": "VM",
+    "Shattered Plains": "SP",
+    "Obsidian Dunes": "OD",
+    "Gloom Peaks": "GP",
+    "Cinderglade": "CG"
 }
 
-BIOME_PLANTS_ABBREVIATIONS = {
-    "fiber": "f",
-    "carrot": "c",
-    "leaves": "l",
-    "resin": "r",
-    "pea": "p",
-    "fissure pulp": "fp",
-    "shards": "s",
-    "essence": "e",
-    "frostshard wood": "fw",
-    "kale": "k",
-    "crystal": "cry",
-    "broccoli": "b",
-    "emberbark": "eb",
-    "asparagus": "a",
-    "radishes": "r"
+PLANT_ABBREVIATIONS = {
+    "Fiber": "FBR",
+    "Carrots": "CRT",
+    "Leaves": "LVS",
+    "Resin": "RSN",
+    "Peas": "PEA",
+    "Pulp": "PLP",
+    "Shards": "SHD",
+    "Essence": "ESS",
+    "Frostshard Wood": "FSW",
+    "Kale": "KLE",
+    "Broccoli": "BRC",
+    "Crystal": "CRY",
+    "Emberbark": "EMB",
+    "Asparagus": "ASP",
+    "Radishes": "RAD"
 }
 
 class BountySystem:
@@ -135,7 +135,7 @@ class BountySystem:
 # Define the creature class
 class Creature:
     def __init__(self, name, abbreviation, biome, damage, health, drops, exp_range, is_predator, status_effects=[], special_ability=None):
-        self.name = name
+        player.name = name
         self.abbreviation = abbreviation
         self.biome = biome
         self.damage = damage
@@ -148,7 +148,7 @@ class Creature:
         self.special_ability = special_ability
 
     def __repr__(self):
-        return f"{self.name} (Biome: {self.biome}) - Damage: {self.damage}, Health: {self.health}"
+        return f"{player.name} (Biome: {self.biome}) - Damage: {self.damage}, Health: {self.health}"
 
     def reset_health(self):
         """Reset the creature's health to its maximum value."""
@@ -164,7 +164,7 @@ class Creature:
         
         # Basic attack message
         print("")
-        print(f"{self.name} attacks {target.name} for {damage_dealt} damage after protection!")
+        print(f"{player.name} attacks {target.name} for {damage_dealt} damage after protection!")
         print("\n---                   ---")
         print("")
         # Apply damage
@@ -176,21 +176,21 @@ class Creature:
                 if effect == 'poison' and 'poison' not in target.status_effects:
                     if random.random() < POISON_CHANCE:
                         target.status_effects.append('poison')
-                        print(f"{self.name}'s venomous attack poisons {target.name}!")
+                        print(f"{player.name}'s venomous attack poisons {target.name}!")
                 
                 elif effect == 'bleeding' and 'bleeding' not in target.status_effects:
                     if random.random() < BLEED_CHANCE:
                         target.status_effects.append('bleeding')
-                        print(f"{self.name}'s savage attack causes {target.name} to bleed!")
+                        print(f"{player.name}'s savage attack causes {target.name} to bleed!")
                 elif effect == 'burn' and 'burn' not in target.status_effects:
                     if random.random() < BURN_CHANCE:
                         target.status_effects.append('burn')
-                        print(f"{self.name}'s fiery scratch causes {target.name} to burn!")
+                        print(f"{player.name}'s fiery scratch causes {target.name} to burn!")
                 
                 elif effect == 'shadow_shroud' and 'shadow shroud' not in target.status_effects:
                     if random.random() < SHADOW_CHANCE:
                         target.status_effects.append('shadow shroud')
-                        print(f"{self.name}'s dark presence envelops {target.name} in shadows!")
+                        print(f"{player.name}'s dark presence envelops {target.name} in shadows!")
         
         if target.health <= 0:
             print(f"{target.name} has been defeated!")
@@ -198,39 +198,39 @@ class Creature:
     def use_special_ability(self, target):
         if self.special_ability == "double_strike":
             damage = self.damage * 2
-            print(f"{self.name} uses Double Strike for {damage} damage!")
+            print(f"{player.name} uses Double Strike for {damage} damage!")
             target.health -= damage
             
         elif self.special_ability == "quake_stomp":
             damage = self.damage * 1.5
-            print(f"{self.name} uses Quake Stomp for {damage} damage!")
+            print(f"{player.name} uses Quake Stomp for {damage} damage!")
             target.health -= damage
 
         elif self.special_ability == "scorching_grasp":
             damage = self.damage * 3
-            print(f"{self.name} uses Scorching Grasp for {damage} damage!")
+            print(f"{player.name} uses Scorching Grasp for {damage} damage!")
             target.health -= damage
 
         elif self.special_ability == "reflective_dive":
             damage = self.damage * 2
-            print(f"{self.name} attacks twice using Reflective Dive for {damage} damage!")
+            print(f"{player.name} attacks twice using Reflective Dive for {damage} damage!")
             target.health -= damage
 
         elif self.special_ability == "inferno_charge":
             damage = self.damage * 1.8
-            print(f"{self.name} uses Inferno Charge for {damage} damage!")
+            print(f"{player.name} uses Inferno Charge for {damage} damage!")
             target.health -= damage
             
         elif self.special_ability == "life_drain":
             damage = int(self.damage * 1.5)
             heal = int(damage * 0.5)
-            print(f"{self.name} uses Life Drain for {damage} damage and heals for {heal}!")
+            print(f"{player.name} uses Life Drain for {damage} damage and heals for {heal}!")
             target.health -= damage
             self.health = min(self.max_health, self.health + heal)
             
         elif self.special_ability == "tremor_stomp":
             damage = int(self.damage * 0.75)
-            print(f"{self.name} uses Tremor Stomp for {damage} damage!")
+            print(f"{player.name} uses Tremor Stomp for {damage} damage!")
             target.health -= damage
             if random.random() <= 0.5:  # 50% chance to stun
                 target.status_effects.append('dazed')
@@ -242,17 +242,17 @@ class Creature:
         for effect in self.status_effects:
             if effect == 'poison' and 'poison' not in target.status_effects:
                 if random.random() < POISON_CHANCE:
-                    print(f"{self.name}'s venomous attack poisons {target.name}!")
+                    print(f"{player.name}'s venomous attack poisons {target.name}!")
                     target.status_effects.append('poison')
             
             elif effect == 'bleeding' and 'bleeding' not in target.status_effects:
                 if random.random() < BLEED_CHANCE:
-                    print(f"{self.name}'s savage attack causes {target.name} to bleed!")
+                    print(f"{player.name}'s savage attack causes {target.name} to bleed!")
                     target.status_effects.append('bleeding')
             
             elif effect == 'shadow_shroud' and 'shadow shroud' not in target.status_effects:
                 if random.random() < SHADOW_CHANCE:
-                    print(f"{self.name}'s dark presence envelops {target.name} in shadows!")
+                    print(f"{player.name}'s dark presence envelops {target.name} in shadows!")
                     target.status_effects.append('shadow shroud')
 
     def generate_drops(self):
@@ -269,7 +269,7 @@ class Creature:
 
 class Plant:
     def __init__(self, name, biome, gather_chance, effects=None):
-        self.name = name
+        player.name = name
         self.biome = biome
         self.gather_chance = gather_chance  # Chance to successfully gather (0.0 to 1.0)
         self.effects = effects or {}  # Dictionary of effects this plant can have
@@ -278,7 +278,7 @@ class Plant:
 # Define the item class
 class Item:
     def __init__(self, name, item_type, effect_value):
-        self.name = name
+        player.name = name
         self.abbreviation = name[:2].upper()
         self.item_type = item_type  # "heal", "stamina", "both", "boost", "damage"
         self.effect_value = effect_value  # Value of the effect
@@ -320,58 +320,58 @@ class Item:
                     "Embercool Salve": "burn"
                 }
                 
-                effect_to_remove = effect_removers.get(self.name)
+                effect_to_remove = effect_removers.get(player.name)
                 if effect_to_remove:  # Only proceed if we have a valid effect to remove
                     if effect_to_remove in target.status_effects:
                         target.status_effects.remove(effect_to_remove)
-                        print(f"{target.name} uses {self.name} and removes the {effect_to_remove} status effect!")
+                        print(f"{target.name} uses {player.name} and removes the {effect_to_remove} status effect!")
                     else:
                         print(f"{target.name} doesn't have {effect_to_remove} status effect!")
                 else:
-                    print(f"{self.name} cannot remove any status effects!")
+                    print(f"{player.name} cannot remove any status effects!")
                     return
 
         if self.item_type == "protection":
             target.protection += self.effect_value
-            print(f"{target.name} uses {self.name} and gains {self.effect_value} protection!")
+            print(f"{target.name} uses {player.name} and gains {self.effect_value} protection!")
         
         elif self.item_type == "full_restore":
             target.health = target.max_health
             target.stamina = target.max_stamina
-            print(f"{target.name} uses {self.name} and fully restores all stats!")
+            print(f"{target.name} uses {player.name} and fully restores all stats!")
             
         elif self.item_type == "cure_status":
             target.status_effects.clear()
-            print(f"{target.name} uses {self.name} and removes all status effects!")
+            print(f"{target.name} uses {player.name} and removes all status effects!")
             
         elif self.item_type == "full_heal":
             target.health = target.max_health
-            print(f"{target.name} uses {self.name} and fully restores HP!")
+            print(f"{target.name} uses {player.name} and fully restores HP!")
             
         elif self.item_type == "full_stamina":
             target.stamina = target.max_stamina
-            print(f"{target.name} uses {self.name} and fully restores stamina!")
+            print(f"{target.name} uses {player.name} and fully restores stamina!")
             
         elif self.item_type == "heal":
             target.health = min(target.max_health, target.health + self.effect_value)
-            print(f"{target.name} uses {self.name} and heals {self.effect_value} HP!")
+            print(f"{target.name} uses {player.name} and heals {self.effect_value} HP!")
             
         elif self.item_type == "stamina":
             target.stamina = min(target.stamina + self.effect_value, target.max_stamina)  # Updated
-            print(f"{target.name} uses {self.name} and recovers {self.effect_value} stamina!")
+            print(f"{target.name} uses {player.name} and recovers {self.effect_value} stamina!")
 
         elif self.item_type == "both":
             target.health = min(target.max_health, target.health + self.effect_value[0])
             target.stamina = min(target.stamina + self.effect_value[1], target.max_stamina)  # Updated
-            print(f"{target.name} uses {self.name} and heals {self.effect_value[0]} HP and recovers {self.effect_value[1]} stamina!")
+            print(f"{target.name} uses {player.name} and heals {self.effect_value[0]} HP and recovers {self.effect_value[1]} stamina!")
 
         elif self.item_type == "boost":
             target.damage += self.effect_value
-            print(f"{target.name} uses {self.name} and increases their damage by {self.effect_value}!")
+            print(f"{target.name} uses {player.name} and increases their damage by {self.effect_value}!")
 
         elif self.item_type == "damage":
             target.health -= self.effect_value
-            print(f"{target.name} uses {self.name} and takes {self.effect_value} damage!")
+            print(f"{target.name} uses {player.name} and takes {self.effect_value} damage!")
 
 
         status_effects = ','.join(target.status_effects) if target.status_effects else "None"
@@ -455,7 +455,7 @@ class CraftingSystem:
 # Define player character class
 class PlayerCharacter:
     def __init__(self, name, max_health, health, stamina, max_stamina, luck, protection, light, damage, status_effects):
-        self.name = name
+        player.name = name
         self.max_health = max_health
         self.health = health
         self.stamina = stamina
@@ -468,7 +468,7 @@ class PlayerCharacter:
         self.inventory = []  # Initialize inventory for items
 
     def __repr__(self):
-        return f"{self.name}: HP={self.health}/{self.max_health}, Stamina={self.stamina}/{self.max_stamina}, Luck={self.luck}, Protection={self.protection}, Light={self.light}, Damage={self.damage}, Status Effects={self.status_effects}"
+        return f"{player.name}: HP={self.health}/{self.max_health}, Stamina={self.stamina}/{self.max_stamina}, Luck={self.luck}, Protection={self.protection}, Light={self.light}, Damage={self.damage}, Status Effects={self.status_effects}"
 
     @staticmethod
     def from_input():
@@ -511,7 +511,7 @@ class PlayerCharacter:
     def heal(self, target):
         heal_amount = 20  # Base healing amount
         target.health = min(target.health + heal_amount, target.max_health)  # Prevent overhealing
-        print(f"{self.name} heals {target.name} for {heal_amount} HP!")
+        print(f"{player.name} heals {target.name} for {heal_amount} HP!")
         print(f"{target.name}'s health is now {target.health}/{target.max_health}")
 
     # Ability to heal another player or self
@@ -541,8 +541,8 @@ class PlayerCharacter:
             print("")
             print("")
             print("")
-            print(f"\n--- Actions during {self.name}'s turn ---")
-            print(f"{self.name} uses TRIAGE and heals {target.name} for {heal_amount} HP!")
+            print(f"\n--- Actions during {player.name}'s turn ---")
+            print(f"{player.name} uses TRIAGE and heals {target.name} for {heal_amount} HP!")
         else:
             print("")
             print("")
@@ -565,8 +565,8 @@ class PlayerCharacter:
             print("")
             print("")
             print("")
-            print(f"\n--- Actions during {self.name}'s turn ---")
-            print(f"{self.name} does not have enough stamina to use TRIAGE!")
+            print(f"\n--- Actions during {player.name}'s turn ---")
+            print(f"{player.name} does not have enough stamina to use TRIAGE!")
 
     def aid_surge(self, target):
         if self.stamina >= 3:  # Cost of ability
@@ -594,8 +594,8 @@ class PlayerCharacter:
             print("")
             print("")
             print("")
-            print(f"\n--- Actions during {self.name}'s turn ---")
-            print(f"{self.name} uses AID SURGE and heals {target.name} for {heal_amount} HP!")
+            print(f"\n--- Actions during {player.name}'s turn ---")
+            print(f"{player.name} uses AID SURGE and heals {target.name} for {heal_amount} HP!")
         else:
             print("")
             print("")
@@ -618,8 +618,8 @@ class PlayerCharacter:
             print("")
             print("")
             print("")
-            print(f"\n--- Actions during {self.name}'s turn ---")
-            print(f"{self.name} does not have enough stamina to use AID SURGE!")
+            print(f"\n--- Actions during {player.name}'s turn ---")
+            print(f"{player.name} does not have enough stamina to use AID SURGE!")
 # double_strike
     # Ability to add protection
     def fortify(self):
@@ -648,8 +648,8 @@ class PlayerCharacter:
             print("")
             print("")
             print("")
-            print(f"\n--- Actions during {self.name}'s turn ---")
-            print(f"{self.name} uses FORTIFY and gains {additional_protection} protection!")
+            print(f"\n--- Actions during {player.name}'s turn ---")
+            print(f"{player.name} uses FORTIFY and gains {additional_protection} protection!")
         else:
             print("")
             print("")
@@ -672,8 +672,8 @@ class PlayerCharacter:
             print("")
             print("")
             print("")
-            print(f"\n--- Actions during {self.name}'s turn ---")
-            print(f"{self.name} does not have enough stamina to use FORTIFY!")
+            print(f"\n--- Actions during {player.name}'s turn ---")
+            print(f"{player.name} does not have enough stamina to use FORTIFY!")
 
     def iron_bastion(self):
         if self.stamina >= 5:  # Cost of ability
@@ -701,8 +701,8 @@ class PlayerCharacter:
             print("")
             print("")
             print("")
-            print(f"\n--- Actions during {self.name}'s turn ---")
-            print(f"{self.name} uses IRON BASTION and gains {additional_protection} protection!")
+            print(f"\n--- Actions during {player.name}'s turn ---")
+            print(f"{player.name} uses IRON BASTION and gains {additional_protection} protection!")
         else:
             print("")
             print("")
@@ -725,8 +725,8 @@ class PlayerCharacter:
             print("")
             print("")
             print("")
-            print(f"\n--- Actions during {self.name}'s turn ---")
-            print(f"{self.name} does not have enough stamina to use IRON BASTION!")
+            print(f"\n--- Actions during {player.name}'s turn ---")
+            print(f"{player.name} does not have enough stamina to use IRON BASTION!")
 
     # Power attack ability for extra damage
     def power_attack(self, target):
@@ -756,8 +756,8 @@ class PlayerCharacter:
             print("")
             print("")
             print("")
-            print(f"\n--- Actions during {self.name}'s turn ---")
-            print(f"{self.name} performs a power attack on {target.name} for {total_damage} damage!")
+            print(f"\n--- Actions during {player.name}'s turn ---")
+            print(f"{player.name} performs a power attack on {target.name} for {total_damage} damage!")
         else:
             print("")
             print("")
@@ -780,8 +780,8 @@ class PlayerCharacter:
             print("")
             print("")
             print("")
-            print(f"\n--- Actions during {self.name}'s turn ---")
-            print(f"{self.name} does not have enough stamina to perform a power attack!")
+            print(f"\n--- Actions during {player.name}'s turn ---")
+            print(f"{player.name} does not have enough stamina to perform a power attack!")
 
     def critical_precision(self, target):
         if self.stamina >= 7:  # Cost of ability
@@ -810,8 +810,8 @@ class PlayerCharacter:
             print("")
             print("")
             print("")
-            print(f"\n--- Actions during {self.name}'s turn ---")
-            print(f"{self.name} performs a CRITICAL PRECISION on {target.name} for {total_damage} damage!")
+            print(f"\n--- Actions during {player.name}'s turn ---")
+            print(f"{player.name} performs a CRITICAL PRECISION on {target.name} for {total_damage} damage!")
         else:
             print("")
             print("")
@@ -834,8 +834,8 @@ class PlayerCharacter:
             print("")
             print("")
             print("")
-            print(f"\n--- Actions during {self.name}'s turn ---")
-            print(f"{self.name} does not have enough stamina to perform a CRITICAL PRECISION!")
+            print(f"\n--- Actions during {player.name}'s turn ---")
+            print(f"{player.name} does not have enough stamina to perform a CRITICAL PRECISION!")
 
     def crushing_blow(self, target):
         if self.stamina >= 15:  # Cost of ability
@@ -864,8 +864,8 @@ class PlayerCharacter:
             print("")
             print("")
             print("")
-            print(f"\n--- Actions during {self.name}'s turn ---")
-            print(f"{self.name} performs a CRUSHING BLOW on {target.name} for {total_damage} damage!")
+            print(f"\n--- Actions during {player.name}'s turn ---")
+            print(f"{player.name} performs a CRUSHING BLOW on {target.name} for {total_damage} damage!")
         else:
             print("")
             print("")
@@ -888,8 +888,8 @@ class PlayerCharacter:
             print("")
             print("")
             print("")
-            print(f"\n--- Actions during {self.name}'s turn ---")
-            print(f"{self.name} does not have enough stamina to perform a CRUSHING BLOW!")
+            print(f"\n--- Actions during {player.name}'s turn ---")
+            print(f"{player.name} does not have enough stamina to perform a CRUSHING BLOW!")
 
     def ravage(self, target):
         if self.stamina >= 20:  # Cost of ability
@@ -918,8 +918,8 @@ class PlayerCharacter:
             print("")
             print("")
             print("")
-            print(f"\n--- Actions during {self.name}'s turn ---")
-            print(f"{self.name} RAVAGES {target.name} and deals {total_damage} damage!")
+            print(f"\n--- Actions during {player.name}'s turn ---")
+            print(f"{player.name} RAVAGES {target.name} and deals {total_damage} damage!")
         else:
             print("")
             print("")
@@ -942,8 +942,8 @@ class PlayerCharacter:
             print("")
             print("")
             print("")
-            print(f"\n--- Actions during {self.name}'s turn ---")
-            print(f"{self.name} does not have enough stamina to use RAVAGE!")
+            print(f"\n--- Actions during {player.name}'s turn ---")
+            print(f"{player.name} does not have enough stamina to use RAVAGE!")
     
     # Double strike ability to attack twice
     def double_strike(self, target):
@@ -973,8 +973,8 @@ class PlayerCharacter:
             print("")
             print("")
             print("")
-            print(f"\n--- Actions during {self.name}'s turn ---")
-            print(f"{self.name} hits {target.name} with a DOUBLE STRIKE for {total_damage} damage!")
+            print(f"\n--- Actions during {player.name}'s turn ---")
+            print(f"{player.name} hits {target.name} with a DOUBLE STRIKE for {total_damage} damage!")
         else:
             print("")
             print("")
@@ -997,9 +997,8 @@ class PlayerCharacter:
             print("")
             print("")
             print("")
-            print(f"\n--- Actions during {self.name}'s turn ---")
-            print(f"{self.name} does not have enough stamina to perform a DOUBLE STRIKE!")
-
+            print(f"\n--- Actions during {player.name}'s turn ---")
+            print(f"{player.name} does not have enough stamina to perform a DOUBLE STRIKE!")
     def guardian_slam(self, target):
         if self.stamina >= 10:  # Cost of ability
             self.stamina -= 10
@@ -1027,8 +1026,8 @@ class PlayerCharacter:
             print("")
             print("")
             print("")
-            print(f"\n--- Actions during {self.name}'s turn ---")
-            print(f"{self.name} uses GUARDIAN SLAM and deals {total_damage} damage!")
+            print(f"\n--- Actions during {player.name}'s turn ---")
+            print(f"{player.name} uses GUARDIAN SLAM and deals {total_damage} damage!")
         else:
             print("")
             print("")
@@ -1051,8 +1050,8 @@ class PlayerCharacter:
             print("")
             print("")
             print("")
-            print(f"\n--- Actions during {self.name}'s turn ---")
-            print(f"{self.name} does not have enough stamina to perform a GUARDIAN SLAM!")
+            print(f"\n--- Actions during {player.name}'s turn ---")
+            print(f"{player.name} does not have enough stamina to perform a GUARDIAN SLAM!")
 
     # Rally ability to boost another player's damage
     def rally(self, target):
@@ -1081,8 +1080,8 @@ class PlayerCharacter:
             print("")
             print("")
             print("")
-            print(f"\n--- Actions during {self.name}'s turn ---")
-            print(f"{self.name} rallies {target.name}, increasing their damage by {damage_boost}!")
+            print(f"\n--- Actions during {player.name}'s turn ---")
+            print(f"{player.name} rallies {target.name}, increasing their damage by {damage_boost}!")
         else:
             print("")
             print("")
@@ -1105,8 +1104,8 @@ class PlayerCharacter:
             print("")
             print("")
             print("")
-            print(f"\n--- Actions during {self.name}'s turn ---")
-            print(f"{self.name} does not have enough stamina to rally!")
+            print(f"\n--- Actions during {player.name}'s turn ---")
+            print(f"{player.name} does not have enough stamina to rally!")
 
     # Use an item
     def use_item(self, item):
@@ -1118,26 +1117,26 @@ class PlayerCharacter:
 
         if 'shadow shroud' in self.status_effects:
             damage_taken += SHADOW_SHROUD_DAMAGE
-            print(f"{self.name} is under Shadow Shroud and loses {SHADOW_SHROUD_DAMAGE} HP!")
+            print(f"{player.name} is under Shadow Shroud and loses {SHADOW_SHROUD_DAMAGE} HP!")
 
         if 'bleeding' in self.status_effects:
             damage_taken += BLEED_DAMAGE
-            print(f"{self.name} is bleeding and loses {BLEED_DAMAGE} HP!")
+            print(f"{player.name} is bleeding and loses {BLEED_DAMAGE} HP!")
 
         if 'burn' in self.status_effects:
             damage_taken += BURN_DAMAGE
-            print(f"{self.name} is burning and loses {BLEED_DAMAGE} HP!")
+            print(f"{player.name} is burning and loses {BLEED_DAMAGE} HP!")
 
         if 'poison' in self.status_effects:
             damage_taken += POISON_DAMAGE
-            print(f"{self.name} is poisoned and loses {POISON_DAMAGE} HP!")
+            print(f"{player.name} is poisoned and loses {POISON_DAMAGE} HP!")
 
         # Apply the total damage taken
         self.health -= damage_taken
 
         # Check for dazed status and handle it
         if 'dazed' in self.status_effects:
-            print(f"{self.name} is dazed and cannot act this turn.")
+            print(f"{player.name} is dazed and cannot act this turn.")
             # Remove dazed status after it has been processed
             self.status_effects.remove('dazed')
             return True  # Indicate that the player cannot act
@@ -1464,21 +1463,28 @@ class Battle:
 
         # Add new method to Battle class
     def gather_plants(self, player):
-        current_biome = input("Which biome are you gathering in?): ").strip().capitalize()
-        
-        if current_biome not in self.biomes:
-            print("Invalid biome selected.")
-            return
-
         # Check stamina first
         stamina_cost = 5
         if player.stamina < stamina_cost:
             print(f"Not enough stamina to gather plants. Required: {stamina_cost}")
             return
 
+        # Keep asking for biome until valid
+        while True:
+            current_biome = input("Which biome are you gathering in?: ").strip().capitalize()
+            full_biome = None
+            for biome, abbrev in BIOME_ABBREVIATIONS.items():
+                if current_biome.upper() == abbrev or current_biome.lower() == biome.lower():
+                    full_biome = biome
+                    break
+            
+            if full_biome and full_biome in self.biomes:
+                break
+            print("Invalid biome selected. Please try again.")
+
         # Define plants available in each biome
         biome_plants = {
-            "veilmarsh": {
+            "Veilmarsh": {
                 "Fiber": 0.7,
                 "Carrots": 0.7,
                 "Leaves": 0.3
@@ -1507,62 +1513,58 @@ class Battle:
             }
         }
 
-        # Show available plants in the chosen biome
-        print(f"\nAvailable plants in {current_biome}:")
-        available_plants = list(biome_plants[current_biome].keys())
-        for idx, plant in enumerate(available_plants, 1):
-            print(f"{idx}. {plant}")
-
         # Let player choose a plant
-        try:
-            choice = int(input("\nEnter the number of the plant you want to gather: ")) - 1
-            if 0 <= choice < len(available_plants):
-                selected_plant = available_plants[choice]
-                chance = biome_plants[current_biome][selected_plant]
-                
-                # Deduct stamina
-                player.stamina -= stamina_cost
+        while True:
+            plant_choice = input("\nEnter the name or abbreviation of the plant you want to gather: ").strip()
+            selected_plant = None
+            
+            for plant in biome_plants[full_biome].keys():
+                if (plant_choice.lower() == plant.lower() or 
+                    plant_choice.upper() == PLANT_ABBREVIATIONS.get(plant, "").upper()):
+                    selected_plant = plant
+                    break
+            
+            if selected_plant:
+                break
+            print("Invalid plant selection. Please try again.")
+        chance = biome_plants[full_biome][selected_plant]
+        player.stamina -= stamina_cost
 
-                # Attempt to gather the chosen plant
-                if random.random() < chance:
-                    amount = random.randint(1, 3)
-                    print(f"\nSuccess! You gathered {amount} {selected_plant}(s)")
-                else:
-                    print(f"\nFailed to gather {selected_plant}")
+        if random.random() < chance:
+            amount = random.randint(1, 3)
+            print(f"\nSuccess! You gathered {amount} {selected_plant}(s)")
+        else:
+            print(f"\nFailed to gather {selected_plant}")
 
-                # Inside gather_plants method, replace the creature encounter section with:
-                if random.random() < self.gathering_encounter_chances[current_biome]:
-                    creatures = self.biomes[current_biome]
-                    num_creatures = random.randint(1, 2)
-                    
-                    # Create the creature instances
-                    self.creatures = [Creature(
-                        creature.name,
-                        creature.abbreviation,
-                        creature.biome,
-                        creature.damage,
-                        creature.health,
-                        creature.drops,
-                        creature.exp_range,
-                        creature.is_predator,
-                        creature.status_effects
-                    ) for creature in random.choices(creatures, k=num_creatures)]
-                    
-                    # Display encounter message with specific details
-                    creature_counts = {}
-                    for creature in self.creatures:
-                        creature_counts[creature.name] = creature_counts.get(creature.name, 0) + 1
-                    
-                    encounter_message = "\nDuring gathering, you've encountered: "
-                    encounter_details = [f"{count} {name}" for name, count in creature_counts.items()]
-                    print(encounter_message + ", ".join(encounter_details) + "!")
-                    
-                    self.start_battle()
+        # Inside gather_plants method, replace the creature encounter section with:
+        if random.random() < self.gathering_encounter_chances[full_biome]:
+            creatures = self.biomes[full_biome]
+            num_creatures = random.randint(1, 2)
+            
+            # Create the creature instances
+            self.creatures = [Creature(
+                creature.name,
+                creature.abbreviation,
+                creature.biome,
+                creature.damage,
+                creature.health,
+                creature.drops,
+                creature.exp_range,
+                creature.is_predator,
+                creature.status_effects
+            ) for creature in random.choices(creatures, k=num_creatures)]
+            
+            # Display encounter message with specific details
+            creature_counts = {}
+            for creature in self.creatures:
+                creature_counts[creature.name] = creature_counts.get(creature.name, 0) + 1
+            
+            encounter_message = "\nDuring gathering, you've encountered: "
+            encounter_details = [f"{count} {name}" for name, count in creature_counts.items()]
+            print(encounter_message + ", ".join(encounter_details) + "!")
+            
+            self.start_battle()
 
-            else:
-                print("Invalid plant selection.")
-        except ValueError:
-            print("Please enter a valid number.")
 
     def prompt_for_players(self):
         num_players = int(input("Enter the number of players (0 for none at the beginning): "))
@@ -1777,7 +1779,7 @@ class Battle:
         print("")
         print("")
         print("")
-        print(f"\n--- Actions during {self.name}'s turn ---")
+        print(f"\n--- Actions during {player.name}'s turn ---")
         print("")
         print("Choose an item to use by typing its abbreviation:")
         #for item in self.items:
@@ -1976,7 +1978,7 @@ class Battle:
                             print("")
                             print("")
                             print("")
-                            print(f"\n--- Actions during {self.name}'s turn ---")
+                            print(f"\n--- Actions during {player.name}'s turn ---")
                             print("")
                             print(f"{player.name} attacks {target_creature.name} for {damage} damage!")
                             print(f"{target_creature.name} has {target_creature.health}/{target_creature.max_health} HP remaining!")
