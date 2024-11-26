@@ -1453,9 +1453,9 @@ class Battle:
         pet_input = input("Which pet would you like to catch? (name or abbreviation): ").upper()
         stamina_cost = 5
 
-        current_player = self.players[0]  # or use appropriate index for multiplayer
+        player = self.players[0]
         
-        if players.stamina < stamina_cost:
+        if player.stamina < stamina_cost:
             print(f"Not enough stamina to capture a pet! Required: {stamina_cost}")
             return
         # Find the pet by name or abbreviation
@@ -1472,7 +1472,7 @@ class Battle:
         # Rest of the function remains the same, just update the terminology
         try:
             num_pets = int(input("How many would you like to catch? "))
-            current_player.stamina -= stamina_cost
+            player.stamina -= stamina_cost
             if num_pets < 1:
                 print("You must try to catch at least 1!")
                 return
