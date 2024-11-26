@@ -1158,14 +1158,13 @@ class FarmingSystem:
         }
         
         self.weather_effects = {
-            "Drought": 0.5,  # Withering Gloom - 50% yield
+            "Drought": 0.0,  # Withering Gloom - 50% yield
             "Stormy": 0.7,   # Tempest of Shadows - 70% yield
             "Cloudy": 1.0,   # Shrouded Calm - Normal yield
             "Rainy": 1.5     # Tears of the Eclipse - 150% yield
         }
 
     def plant_and_harvest(self):
-        print("\n" * 21)
         print("\n=== FARMING MENU ===")
         print("Available crops to plant:")
         for crop, info in self.crops.items():
@@ -1374,9 +1373,11 @@ class Battle:
 
         # Define creature encounter chances while gathering in each biome
         self.gathering_encounter_chances = {
-            "Veilmarsh": 0.3,    # 30% chance to encounter creatures
+            "Veilmarsh": 0.2,    # 30% chance to encounter creatures
             "Shattered Plains": 0.4, # 40% chance to encounter creatures
-            "Obsidian Dunes": 0.2 # 20% chance to encounter creatures
+            "Obsidian Dunes": 0.5, # 20% chance to encounter creatures
+            "Gloom Peaks": 0.7, # 20% chance to encounter creatures
+            "Cinderglade": 0.5 # 20% chance to encounter creatures
         }
 
         self.biomes = {
@@ -1434,71 +1435,121 @@ class Battle:
             return selected_bounty
         return None
 
+    def reset_all_creatures(self):
+        """Reset health for all creatures in the battle."""
+        for creature in self.creatures:
+            creature.reset_health()
 
     def hunt_prey(self):
-        # Dictionary of pets and their point values, with abbreviations
-        pet_types = {
-            "Pup": {"abbrev": "PU", "rewards": (1, 5)},
-            "Pangolin": {"abbrev": "PA", "rewards": (5, 10)},
-            "Wispfly": {"abbrev": "WF", "rewards": (10, 20)},
-            "Shardlizard": {"abbrev": "SL", "rewards": (15, 25)}
-        }
-        
-        # Display available pets with abbreviations
-        print("\nAvailable pets:")
-        for pet, info in pet_types.items():
-            print(f"{pet} ({info['abbrev']})")
-        
-        # Get pet choice from user
-        pet_input = input("Which pet would you like to catch? (name or abbreviation): ").upper()
-        stamina_cost = 5
+        # Initial prey hunting chance (30%)
+        if random.random() <= 0.55:
+            # Existing pet hunting logic
+            pet_types = {
+                "Pup": {"abbrev": "PU", "rewards": (1, 5), "biome": "Cinderglade"},
+                "Pangolin": {"abbrev": "PA", "rewards": (5, 10), "biome": "Veilmarsh"},
+                "Wispfly": {"abbrev": "WF", "rewards": (10, 20), "biome": "Gloom Peaks"},
+                "Shardlizard": {"abbrev": "SL", "rewards": (15, 25), "biome": "Shattered Plains"}
+            }
+            
+            # Display available pets with abbreviations
+            print("\nAvailable pets:")
+            for pet, info in pet_types.items():
+                print(f"{pet} ({info['abbrev']})")
+            
+            # Get pet choice from user
+            pet_input = input("Which pet would you like to catch? (name or abbreviation): ").upper()
+            stamina_cost = 5
 
-        player = self.players[0]
-        
-        if player.stamina < stamina_cost:
-            print(f"Not enough stamina to capture a pet! Required: {stamina_cost}")
-            return
-        # Find the pet by name or abbreviation
-        selected_pet = None
-        for pet, info in pet_types.items():
-            if pet_input == info['abbrev'] or pet_input == pet.upper():
-                selected_pet = pet
-                break
-        
-        if not selected_pet:
-            print("That pet is not available to catch!")
-            return
-        
-        # Rest of the function remains the same, just update the terminology
-        try:
-            num_pets = int(input("How many would you like to catch? "))
-            player.stamina -= stamina_cost
-            if num_pets < 1:
-                print("You must try to catch at least 1!")
+            player = self.players[0]
+            
+            if player.stamina < stamina_cost:
+                print(f"Not enough stamina to capture a pet! Required: {stamina_cost}")
                 return
-        except ValueError:
-            print("Please enter a valid number!")
-            return
+
+            # Find the pet by name or abbreviation
+            selected_pet = None
+            for pet, info in pet_types.items():
+                if pet_input == info['abbrev'] or pet_input == pet.upper():
+                    selected_pet = pet
+                    break
             
-        successful_catches = 0
-        total_glowstone = 0
-        
-        for i in range(num_pets):
-            pet_direction = random.choice(["left", "right", "forward", "backward"])
-            guess = input(f"\nPet #{i+1} is running! Guess left, right, forward, backward!: ").lower()
+            if not selected_pet:
+                print("That pet is not available to catch!")
+                return
             
-            if guess == pet_direction:
-                print("Success! You caught the pet!")
-                successful_catches += 1
-                glowstone = random.randint(*pet_types[selected_pet]['rewards'])
-                total_glowstone += glowstone
-                print(f"You earned {glowstone} glowstone!")
-            else:
-                print(f"The pet got away! It ran {pet_direction}!")
+            try:
+                num_pets = int(input("How many would you like to catch? "))
+                player.stamina -= stamina_cost
+                if num_pets < 1:
+                    print("You must try to catch at least 1!")
+                    return
+            except ValueError:
+                print("Please enter a valid number!")
+                return
                 
-        print(f"\nCatching Results:")
-        print(f"Pets Caught: {successful_catches}/{num_pets}")
-        print(f"Total Glowstone Earned: {total_glowstone}")
+            successful_catches = 0
+            total_glowstone = 0
+            
+            for i in range(num_pets):
+                pet_direction = random.choice(["left", "right", "forward", "backward"])
+                guess = input(f"\nPet #{i+1} is running! Guess left, right, forward, backward!: ").lower()
+                
+                if guess == pet_direction:
+                    print("Success! You caught the pet!")
+                    print(f"{player.name},{player.max_health},{player.health},{player.stamina},{player.max_stamina},{player.luck},{player.protection},{player.light},{player.damage},{player.status_effects}")
+                    successful_catches += 1
+                    glowstone = random.randint(*pet_types[selected_pet]['rewards'])
+                    total_glowstone += glowstone
+                    print(f"You earned {glowstone} glowstone!")
+                else:
+                    print(f"The pet got away! It ran {pet_direction}!")
+                    print(f"{player.name},{player.max_health},{player.health},{player.stamina},{player.max_stamina},{player.luck},{player.protection},{player.light},{player.damage},{player.status_effects}")
+                    
+            print(f"\nCatching Results:")
+            print(f"Pets Caught: {successful_catches}/{num_pets}")
+            print(f"Total Glowstone Earned: {total_glowstone}")
+
+            # After prey hunting sequence completes (whether successful or not)
+            if random.random() <= 0.5:  # 50% chance for creature encounter
+                print("\nA wild creature appears!")
+                
+                # Get the current biome based on the selected pet
+                current_biome = None
+                for pet, info in pet_types.items():
+                    if pet_input == info['abbrev'] or pet_input == pet.upper():
+                        current_biome = info['biome']
+                        break
+                
+                if current_biome and current_biome in self.biomes:
+                    # Clear any existing creatures
+                    self.creatures.clear()
+                    
+                    # Get available creatures for this biome
+                    biome_creatures = self.biomes[current_biome]
+                    
+                    # Spawn 1-2 random creatures from this biome
+                    num_creatures = random.randint(1, 2)
+                    selected_creatures = random.choices(biome_creatures, k=num_creatures)
+                    
+                    # Create the creature instances
+                    for creature_template in selected_creatures:
+                        new_creature = Creature(
+                            creature_template.name,
+                            creature_template.abbreviation,
+                            creature_template.biome,
+                            creature_template.damage,
+                            creature_template.max_health,
+                            creature_template.drops,
+                            creature_template.exp_range,
+                            creature_template.is_predator,
+                            creature_template.status_effects
+                        )
+                        self.creatures.append(new_creature)
+                    
+                    print(f"You've encountered {num_creatures} creatures in {current_biome}!")
+                    self.start_battle()
+        else:
+            print("\nNo pets found.")
 
     def craft_menu(self, player):
         crafting = CraftingSystem()
@@ -1609,8 +1660,10 @@ class Battle:
         if random.random() < chance:
             amount = random.randint(1, 3)
             print(f"\nSuccess! You gathered {amount} {selected_plant}(s)")
+            print(f"{player.name},{player.max_health},{player.health},{player.stamina},{player.max_stamina},{player.luck},{player.protection},{player.light},{player.damage},{player.status_effects}")
         else:
             print(f"\nFailed to gather {selected_plant}")
+            print(f"{player.name},{player.max_health},{player.health},{player.stamina},{player.max_stamina},{player.luck},{player.protection},{player.light},{player.damage},{player.status_effects}")
 
         # Inside gather_plants method, replace the creature encounter section with:
         if random.random() < self.gathering_encounter_chances[full_biome]:
@@ -1629,6 +1682,7 @@ class Battle:
                 creature.is_predator,
                 creature.status_effects
             ) for creature in random.choices(creatures, k=num_creatures)]
+            self.reset_all_creatures()
             
             # Display encounter message with specific details
             creature_counts = {}
@@ -1675,9 +1729,7 @@ class Battle:
             elif action == 'f':
                 farming = FarmingSystem()
                 while True:
-                    print("\n" * 21)
-                    print("\n" * 21)
-                    print("\n" * 21)
+                    print("\n" * 10)
                     print("\n=== FARMING MENU ===")
                     print("1. Plant and harvest crop")
                     print("2. Exit farming")
@@ -1840,15 +1892,17 @@ class Battle:
             player.stamina -= stamina_cost
             print("\n" * 21)
             print(f"{player.name} travels from {starting_biome} to {destination_biome} and it takes {stamina_cost} stamina.")
-
+            print(f"{player.name},{player.max_health},{player.health},{player.stamina},{player.max_stamina},{player.luck},{player.protection},{player.light},{player.damage},{player.status_effects}")
         encounter_chance = random.randint(1, 100)
 
         if encounter_chance <= 20:
+        
             print("During travel, the group encountered bad weather, losing 10 stamina each.")
             for player in players:
                 player.stamina -= 10
                 if player.stamina < 0:
                     print("\n" * 21)
+                    print(f"{player.name},{player.max_health},{player.health},{player.stamina},{player.max_stamina},{player.luck},{player.protection},{player.light},{player.damage},{player.status_effects}")
                     print(f"{player.name} cannot continue and the travel failed due to low stamina!")
                     return
 
@@ -1856,6 +1910,7 @@ class Battle:
             event_type = random.choice(["cache", "healer"])
             if event_type == "cache":
                 print("\n" * 21)
+                print(f"{player.name},{player.max_health},{player.health},{player.stamina},{player.max_stamina},{player.luck},{player.protection},{player.light},{player.damage},{player.status_effects}")
                 print("During your travel, the group found a hidden cache and each received a free prize!")
             elif event_type == "healer":
                 for player in players:
@@ -1881,6 +1936,7 @@ class Battle:
                 creature.is_predator,
                 creature.status_effects
             ) for creature in random.choices(creatures, k=num_creatures)]
+            self.reset_all_creatures()
 
             for creature in self.creatures:
                 creature.reset_health()
@@ -2077,7 +2133,7 @@ class Battle:
             selected_creature.abbreviation,
             selected_creature.biome,
             selected_creature.damage,
-            selected_creature.health,
+            selected_creature.max_health,
             selected_creature.drops,
             selected_creature.exp_range,
             selected_creature.is_predator,
@@ -2449,3 +2505,4 @@ battle = Battle(players)
 
 # Start the game and prompt for actions immediately
 battle.choose_action()
+
