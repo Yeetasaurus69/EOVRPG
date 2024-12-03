@@ -1,293 +1,3 @@
-import random
-
-
-# Ohm,200,200, 50, 50,50,5,1,15
-
-# Define constants for status effects and travel outcomes
-BLEED_DAMAGE = 5
-BURN_DAMAGE = 3
-POISON_DAMAGE = 3
-SHADOW_SHROUD_DAMAGE = 5  
-DAZE_PROBABILITY = 0.05
-
-BURN_CHANCE = 0.02
-BLEED_CHANCE = 0.03
-POISON_CHANCE = 0.05
-SHADOW_CHANCE = 0.05
-
-BIOME_ABBREVIATIONS = {
-    "Veilmarsh": "VM",
-    "Shattered Plains": "SP",
-    "Obsidian Dunes": "OD",
-    "Gloom Peaks": "GP",
-    "Cinderglade": "CG"
-}
-
-PLANT_ABBREVIATIONS = {
-    "Fiber": "FBR",
-    "Carrots": "CRT",
-    "Leaves": "LVS",
-    "Resin": "RSN",
-    "Peas": "PEA",
-    "Pulp": "PLP",
-    "Shards": "SHD",
-    "Essence": "ESS",
-    "Frostshard Wood": "FSW",
-    "Kale": "KLE",
-    "Broccoli": "BRC",
-    "Crystal": "CRY",
-    "Emberbark": "EMB",
-    "Asparagus": "ASP",
-    "Radishes": "RAD"
-}
-
-class BountySystem:
-    def __init__(self):
-        # Define creature types and their base rewards
-        self.creature_rewards = {
-            "Murk Wraith": 10,
-            "Sporefang": 10,
-            "Crimson Cracker": 15,
-            "Shadow Stalker": 15,
-            "Gloom Thicket": 20,
-            "Crystal Rabbit": 20,
-            "Fissure Frolicker": 30,
-            "Dune Dancer": 35,
-            "Ashen Hopper": 30,
-            "Charseed Buncher": 30,
-            "Ember Revenant": 30,
-            "Flamewretch": 30
-        }
-        
-        # Define item types and their base rewards
-        self.item_rewards = {
-            "Essence": 5,
-            "Pelt": 8,
-            "Scale": 6,
-            "Fissure Pulp": 7,
-            "Obsidian Fang": 7,
-            "Crystal": 8,
-            "Emberbark": 9,
-            "Feather": 6,
-            "Hide": 7,
-            "Claw": 9
-        }
-    
-    def generate_bounty(self):
-        bounty_type = random.choice(["combat", "delivery", "mixed"])
-        
-        if bounty_type == "combat":
-            return self._generate_combat_bounty()
-        elif bounty_type == "delivery":
-            return self._generate_delivery_bounty()
-        else:
-            return self._generate_mixed_bounty()
-    
-    def _generate_combat_bounty(self):
-        num_creatures = random.randint(2, 5)
-        creature = random.choice(list(self.creature_rewards.keys()))
-        base_reward = self.creature_rewards[creature]
-        total_reward = base_reward * num_creatures * 1.02  # 20% bonus for combat
-        
-        return {
-            "type": "combat",
-            "task": f"Defeat {num_creatures} {creature}s",
-            "reward": int(total_reward)
-        }
-    
-    def _generate_delivery_bounty(self):
-        num_items = random.randint(3, 8)
-        item = random.choice(list(self.item_rewards.keys()))
-        base_reward = self.item_rewards[item]
-        total_reward = base_reward * num_items * 1.04  # 10% bonus for delivery
-        
-        return {
-            "type": "delivery",
-            "task": f"Deliver {num_items} {item}",
-            "reward": int(total_reward)
-        }
-    
-    def _generate_mixed_bounty(self):
-        # Combine combat and delivery
-        num_creatures = random.randint(1, 3)
-        num_items = random.randint(2, 5)
-        
-        creature = random.choice(list(self.creature_rewards.keys()))
-        item = random.choice(list(self.item_rewards.keys()))
-        
-        total_reward = (self.creature_rewards[creature] * num_creatures + 
-                       self.item_rewards[item] * num_items) * 1.5  # 50% bonus for mixed
-        
-        return {
-            "type": "mixed",
-            "task": f"Defeat {num_creatures} {creature}s and collect {num_items} {item}",
-            "reward": int(total_reward)
-        }
-    
-    def get_available_bounties(self):
-        """Generate 3 random bounties"""
-        bounties = []
-        for _ in range(3):
-            bounties.append(self.generate_bounty())
-        return bounties
-
-
-# Define the creature class
-class Creature:
-    def __init__(self, name, abbreviation, biome, damage, health, drops, exp_range, is_predator, status_effects=[], special_ability=None, luck=3):
-        self.name = name
-        self.abbreviation = abbreviation
-        self.biome = biome
-        self.damage = damage
-        self.health = health
-        self.max_health = health
-        self.luck = luck
-        self.drops = drops  # A dictionary of item drops and their chances
-        self.exp_range = exp_range  # Tuple for EXP range (min, max) for random EXP drop
-        self.is_predator = is_predator
-        self.status_effects = status_effects  # Define possible status effects for this creature
-        self.special_ability = special_ability
-
-    def __repr__(self):
-        return f"{self.name} (Biome: {self.biome}) - Damage: {self.damage}, Health: {self.health}"
-
-    def reset_health(self):
-        """Reset the creature's health to its maximum value."""
-        self.health = self.max_health
-
-    def attack(self, target):
-        # Base miss chance reduced to 5%
-        base_miss_chance = 0.05
-        
-        # Cap the luck difference impact
-        if self.luck < target.luck:
-            luck_diff = min(target.luck - self.luck, 5)  # Cap luck difference at 5
-            miss_chance = base_miss_chance + (luck_diff * 0.03)  # Each point adds 3% instead of 5%
-            miss_chance = min(miss_chance, 0.65)  # Cap total miss chance at 25%
-        else:
-            miss_chance = base_miss_chance
-        
-        # Check if attack misses
-        if random.random() < miss_chance:
-            print(f"{self.name}'s attack misses {target.name}!")
-            return
-
-        # 20% chance to use special ability if one exists
-        if self.special_ability and random.random() <= 0.20:
-            self.use_special_ability(target)
-            return
-
-        damage_dealt = max(self.damage - target.protection, 0)
-        target.health -= damage_dealt
-        print(f"{self.name} attacks {target.name} for {damage_dealt} damage after protection!")
-        print(f"{target.name}'s Health: {target.health}")
-        
-        # Status effects application remains the same
-        if hasattr(target, 'status_effects'):
-            for effect in self.status_effects:
-                if effect == 'poison' and 'poison' not in target.status_effects:
-                    if random.random() < POISON_CHANCE:
-                        target.status_effects.append('poison')
-                        print(f"{self.name}'s venomous attack poisons {target.name}!")
-                
-                elif effect == 'bleeding' and 'bleeding' not in target.status_effects:
-                    if random.random() < BLEED_CHANCE:
-                        target.status_effects.append('bleeding')
-                        print(f"{self.name}'s savage attack causes {target.name} to bleed!")
-                elif effect == 'burn' and 'burn' not in target.status_effects:
-                    if random.random() < BURN_CHANCE:
-                        target.status_effects.append('burn')
-                        print(f"{self.name}'s fiery scratch causes {target.name} to burn!")
-                
-                elif effect == 'shadow_shroud' and 'shadow shroud' not in target.status_effects:
-                    if random.random() < SHADOW_CHANCE:
-                        target.status_effects.append('shadow shroud')
-                        print(f"{self.name}'s dark presence envelops {target.name} in shadows!")
-        
-        if target.health <= 0:
-            print(f"{target.name} has been defeated!")
-
-    def use_special_ability(self, target):
-        if self.special_ability == "double_strike":
-            damage = self.damage * 2
-            print(f"{self.name} uses Double Strike for {damage} damage!")
-            target.health -= damage
-            
-        elif self.special_ability == "quake_stomp":
-            damage = self.damage * 1.5
-            print(f"{self.name} uses Quake Stomp for {damage} damage!")
-            target.health -= damage
-
-        elif self.special_ability == "scorching_grasp":
-            damage = self.damage * 3
-            print(f"{self.name} uses Scorching Grasp for {damage} damage!")
-            target.health -= damage
-
-        elif self.special_ability == "reflective_dive":
-            damage = self.damage * 2
-            print(f"{self.name} attacks twice using Reflective Dive for {damage} damage!")
-            target.health -= damage
-
-        elif self.special_ability == "inferno_charge":
-            damage = self.damage * 1.8
-            print(f"{self.name} uses Inferno Charge for {damage} damage!")
-            target.health -= damage
-            
-        elif self.special_ability == "life_drain":
-            damage = int(self.damage * 1.5)
-            heal = int(damage * 0.5)
-            print(f"{self.name} uses Life Drain for {damage} damage and heals for {heal}!")
-            target.health -= damage
-            self.health = min(self.max_health, self.health + heal)
-            
-        elif self.special_ability == "tremor_stomp":
-            damage = int(self.damage * 0.75)
-            print(f"{self.name} uses Tremor Stomp for {damage} damage!")
-            target.health -= damage
-            if random.random() <= 0.5:  # 50% chance to stun
-                target.status_effects.append('dazed')
-                print(f"{target.name} is stunned!")
-
-
-    def apply_status_effects(self, target):
-        """Apply ongoing effects if applicable."""
-        for effect in self.status_effects:
-            if effect == 'poison' and 'poison' not in target.status_effects:
-                if random.random() < POISON_CHANCE:
-                    print(f"{self.name}'s venomous attack poisons {target.name}!")
-                    target.status_effects.append('poison')
-            
-            elif effect == 'bleeding' and 'bleeding' not in target.status_effects:
-                if random.random() < BLEED_CHANCE:
-                    print(f"{self.name}'s savage attack causes {target.name} to bleed!")
-                    target.status_effects.append('bleeding')
-            
-            elif effect == 'shadow_shroud' and 'shadow shroud' not in target.status_effects:
-                if random.random() < SHADOW_CHANCE:
-                    print(f"{self.name}'s dark presence envelops {target.name} in shadows!")
-                    target.status_effects.append('shadow shroud')
-
-    def generate_drops(self):
-        """Generate drops based on drop percentages and return the total EXP earned."""
-        drops_gained = {}
-        for item, chance in self.drops.items():
-            if random.random() < chance:
-                quantity = random.randint(1, 3)  # Randomly determine a quantity (1 to 3) of the item to drop
-                drops_gained[item] = drops_gained.get(item, 0) + quantity  # Increment the drop count
-        
-        # Generate EXP from the defined range
-        exp_earned = random.randint(*self.exp_range)
-        return drops_gained, exp_earned
-
-class Plant:
-    def __init__(self, name, biome, gather_chance, effects=None):
-        self.name = name
-        self.biome = biome
-        self.gather_chance = gather_chance  # Chance to successfully gather (0.0 to 1.0)
-        self.effects = effects or {}  # Dictionary of effects this plant can have
-        
-
-# Define the item class
 class Item:
     def __init__(self, name, item_type, effect_value):
         self.name = name
@@ -409,529 +119,6 @@ class Item:
         status_effects = ','.join(target.status_effects) if target.status_effects else "None"
         print(f"{target.name},{target.max_health},{target.health},{target.stamina},{target.max_stamina},{target.luck},{target.protection},{target.light},{target.damage},{status_effects}")
 
-class ShadowLottery:
-    def __init__(self):
-        self.prizes = {
-            'Armor': ['Ethereal crown', 'Ethereal Robes', 'Ethereal Greaves', 'Shadow Hood', 'Shadow Cloak', 'Shadow Boots', 'Ashen Helm', 'Ashen Breastplate', 'Ashen Treads', 'Crimson Scale Helm', 'Crimson Scale Breastplate', 'Crimson Scale Legguards', 'Spectral Helm', 'Spectral Chesplate', 'Spectral Greaves', 'Obsidian Helm', 'Obsidian Breastplate', 'Obsidian Legguards'],
-            'Weapons': ['Wraith Dagger', 'Crimson Longbow', 'Flamebrand Sword'],
-            'Accessories': ['Small Traveler’s Pouch', 'Medium Adventurer’s Pack', 'Large Explorer’s Satchel'],
-            'Materials': ['Essence', 'Feather', 'Pelt', 'Hide', 'Claw', 'Fiber', 'leaves', 'scale', 'Resin', 'Pulp', 'Eye', 'Shards', 'Petal Essence', 'Nector', 'Obsidian Fang', 'Emberbark', 'Frostshard Wood', 'Crystal'],
-            'Consumables': ['Healing Wraps', 'Spore Balm', 'Etheric Infusion', 'Embercool Salve'],
-            'Stats': ['+1 Luck', '+1 Damage', '+1 Health', '+1 Protection', '+1 Stamina', '+1 Inv Slot'],
-            'Food': ['Wraith-Warmed Root Stew', 'Ebon Asparagus and Shadow Pea Medley', 'Twilight Broccoli Bliss Bake', 'Frostbitten Vegetable Stir-Fry', 'Gloomy Carrot Delight', 'Shadow Pea Salad', 'Ebon Asparagus Medley', 'Twilight Broccoli Fusion', 'Cursed Radish Medley', 'Frosted Kale Bowl ', 'Shadow Pea & Tiny Meat Skewers', 'Grilled Medium Meat & Frosted Kale Salad', 'Cursed Radish & Tiny Meat Stir-Fry', 'Roasted Tiny Meat', 'Roasted Medium Meat', 'Roasted Large Meat']
-        }
-        
-    def draw_lottery(self, num_draws=1):
-        results = []
-        for _ in range(num_draws):
-            # Choose a random category
-            category = random.choice(list(self.prizes.keys()))
-            # Choose only one random item from that category
-            item = random.choice(self.prizes[category])
-            
-            # 30% chance to get glowstone (between 100-1000)
-            glowstone = random.randint(100, 400) if random.random() < 0.3 else 0
-            
-            results.append({
-                'category': category,
-                'item': item,
-                'glowstone': glowstone
-            })
-        return results
-
-class CraftingSystem:
-    def __init__(self):
-        # Define potion abbreviations in the CraftingSystem class
-        self.recipes = {
-            #MATERIALS
-            "WS": {  # wraith silk
-                "ingredients": {
-                    "Fiber": 10,
-                    "Leaves": 6
-                },
-                "success_rate": 0.8,
-                "result_quantity": 1
-            },
-            "SE": {  # spectral essence
-                "ingredients": {
-                    "Essence ": 8,
-                    "Leaves ": 4
-                },
-                "success_rate": 0.75,
-                "result_quantity": 1
-            },
-
-            "PT": {  # Phantom Threads
-                "ingredients": {
-                    "Fiber": 12,
-                    "Essence": 5
-                },
-                "success_rate": 0.65,
-                "result_quantity": 1
-                
-                },
-            "IC": {  # infernal core
-                "ingredients": {
-                    "Obsidian Fang ": 6,
-                    "Claw": 5,
-                    "Blackflint Shards": 4
-                },
-                "success_rate": 0.54,
-                "result_quantity": 1
-
-                
-                #ARMOR
-                },
-            "EC": {  # Ethereal Crown
-                "ingredients": {
-                    "Wraith Silk": 20,
-                    "Spectral Essence": 10,
-                    "Phantom Threads ": 15
-                },
-                "success_rate": 0.99,
-                "result_quantity": 1
-                
-                },
-            "ER": {  # Ethereal Robes
-                "ingredients": {
-                    "Wraith Silk": 30,
-                    "Spectral Essence": 20,
-                    "Leaves": 15
-                },
-                "success_rate": 0.99,
-                "result_quantity": 1
-                
-                },
-            "EG": {  # Ethereal Greaves
-                "ingredients": {
-                    "Wraith Silk": 20,
-                    "Spectral Essence": 10,
-                    "Fiber": 15
-                },
-                "success_rate": 0.99,
-                "result_quantity": 1
-                
-                },
-            "SH": {  # Shadow Hood
-                "ingredients": {
-                    "Phantom Threads": 15,
-                    "Phantom Threads": 6,
-                    "Reflected Petal Essence": 8
-                },
-                "success_rate": 0.99,
-                "result_quantity": 1
-                
-                },
-            "SC": {  # Shadow Cloak
-                "ingredients": {
-                    "Fiber": 10,
-                    "Leaves": 6
-                },
-                "success_rate": 0.99,
-                "result_quantity": 1
-                
-                },
-
-            "SHB": {  # Shadow Boots
-                "ingredients": {
-                    "Fiber": 30,
-                    "Phantom Threads": 20,
-                    "Crystaltongue Resin": 10
-                },
-                "success_rate": 0.99,
-                "result_quantity": 1
-            },
-
-            "AH": {  # Ashen Helm
-                "ingredients": {
-                    "Obsidian Fang": 10,
-                    "Crystaltongue Resin": 8,
-                    "Infernal Core": 5
-                },
-                "success_rate": 0.99,
-                "result_quantity": 1
-            },
-            "ABP": {  # Ashen Breastplate
-                "ingredients": {
-                    "Obsidian Fang": 15,
-                    "Scale": 25,
-                    "Infernal Core": 10
-                },
-                "success_rate": 0.99,
-                "result_quantity": 1
-            },
-            "AT": {  # Ashen Treads
-                "ingredients": {
-                    "Fiber": 20,
-                    "Crystaltongue Resin": 15,
-                    "Obsidian Fang": 10
-                },
-                "success_rate": 0.99,
-                "result_quantity": 1
-            },
-            "CH": {  # Crimson Scale Helm
-                "ingredients": {
-                    "Scale": 15,
-                    "Claw": 10,
-                    "Crystaltongue Resin": 10
-                },
-                "success_rate": 0.99,
-                "result_quantity": 1
-            },
-            "CB": {  # Crimson Scale Breastplate
-                "ingredients": {
-                    "Scale": 30,
-                    "Claw": 20,
-                    "Reflected Petal Essence": 10
-                },
-                "success_rate": 0.99,
-                "result_quantity": 1
-            },
-            "CS": {  # Crimson Scale Legguards
-                "ingredients": {
-                    "Scale": 20,
-                    "Claw": 15,
-                    "Obsidian Fang": 10
-                },
-                "success_rate": 0.99,
-                "result_quantity": 1
-            },
-            "SPH": {  # Spectral Helm
-                "ingredients": {
-                    "Spectral Essence": 15,
-                    "Wraith Silk": 10,
-                    "Reflected Petal Essence": 5
-                },
-                "success_rate": 0.99,
-                "result_quantity": 1
-            },
-            "SPC": {  # Spectral Chestplate
-                "ingredients": {
-                    "Wraith Silk": 20,
-                    "Spectral Essence": 20,
-                    "Phantom Threads": 15
-                },
-                "success_rate": 0.99,
-                "result_quantity": 1
-            },
-            "SG": {  # Spectral Greaves
-                "ingredients": {
-                    "Phantom Threads": 20,
-                    "Spectral Essence": 15,
-                    "Fiber": 25
-                },
-                "success_rate": 0.75,
-                "result_quantity": 1
-            },
-            "OH": {  # Obsidian Helm
-                "ingredients": {
-                    "Obsidian Fang": 15,
-                    "Blackflint Shards": 10,
-                    "Pelt/Hide": 15
-                },
-                "success_rate": 0.99,
-                "result_quantity": 1
-            },
-            "OB": {  # Obsidian Breastplate
-                "ingredients": {
-                    "Obsidian Fang": 25,
-                    "Scale": 20,
-                    "Infernal Core": 10
-                },
-                "success_rate": 0.99,
-                "result_quantity": 1
-            },
-            "OL": {  # Obsidian Legguards
-                "ingredients": {
-                    "Blackflint Shards": 20,
-                    "Obsidian Fang": 20,
-                    "Fiber": 30
-                },
-                "success_rate": 0.99,
-                "result_quantity": 1
-            },
-            "ST": {  # Small Traveler’s Pouch
-                "ingredients": {
-                    "Fiber": 10,
-                    "Mistweaver Leaves": 5,
-                    "Pelt/Hide": 3
-                },
-                "success_rate": 0.85,
-                "result_quantity": 1
-            },
-            "MA": {  # Medium Adventurer’s Pack
-                "ingredients": {
-                    "Fiber": 25,
-                    "Pelt/Hide": 10,
-                    "Phantom Threads": 5
-                },
-                "success_rate": 0.85,
-                "result_quantity": 1
-            },
-            "LE": {  # Large Explorer’s Satchel
-                "ingredients": {
-                    "Pelt/Hide": 25,
-                    "Phantom Threads": 8,
-                    "Obsidian Fang": 5
-                },
-                "success_rate": 0.85,
-                "result_quantity": 1
-            },
-            "HW": {  # Healing Wraps
-                "ingredients": {
-                    "Fiber": 20,
-                    "Mistweaver Leaves": 15,
-                    "Fissure Pulp": 10
-                },
-                "success_rate": 0.90,
-                "result_quantity": 1
-            },
-            "SB": {  # Spore Balm
-                "ingredients": {
-                    "Essence": 15,
-                    "Fiber": 25,
-                    "Crystaltongue Resin": 10
-                },
-                "success_rate": 0.90,
-                "result_quantity": 1
-            },
-            "EI": {  # Etheric Infusion
-                "ingredients": {
-                    "Essence": 30,
-                    "Spore Balm": 1
-                },
-                "success_rate": 0.90,
-                "result_quantity": 1
-            },
-            "ES": {  # Embercool Salve
-                "ingredients": {
-                    "Crystaltongue Resin": 10,
-                    "Mistweaver Leaves": 20
-                },
-                "success_rate": 0.90,
-                "result_quantity": 1
-            },
-            "RG": {  # Revitalizing Grain Bar
-                "ingredients": {
-                    "Essence": 10,
-                    "Fiber": 20,
-                    "Mistweaver Leaves": 5
-                },
-                "success_rate": 0.90,
-                "result_quantity": 1
-            },
-            "VW": {  # Vital Essence Wrap
-                "ingredients": {
-                    "Fiber": 25,
-                    "Essence": 15,
-                    "Mistweaver Leaves": 10
-                },
-                "success_rate": 0.90,
-                "result_quantity": 1
-            },
-            "RB": {  # Rage-Fused Binding
-                "ingredients": {
-                    "Fiber": 20,
-                    "Crystaltongue Resin": 8,
-                    "Fissure Pulp": 12
-                },
-                "success_rate": 0.90,
-                "result_quantity": 1
-            },
-            "AB": {  # Adrenaline Bar
-                "ingredients": {
-                    "Essence": 25,
-                    "Crystaltongue Resin": 10,
-                    "Mistweaver Leaves": 10
-                },
-                "success_rate": 0.90,
-                "result_quantity": 1
-            },
-            "IT": {  # Ironhide Tonic
-                "ingredients": {
-                    "Fissure Pulp": 15,
-                    "Mistweaver Leaves": 15,
-                    "Crystaltongue Resin": 10
-                },
-                "success_rate": 0.90,
-                "result_quantity": 1
-            },
-            "WD": {  # Wraith Dagger
-                "ingredients": {
-                    "Essence": 20,
-                    "Feather": 15,
-                    "Phantom Threads": 25
-                },
-                "success_rate": 0.85,
-                "result_quantity": 1
-            },
-            "CL": {  # Crimson Longbow
-                "ingredients": {
-                    "Scale": 30,
-                    "Claw": 25,
-                    "Crystaltongue Resin": 15
-                },
-                "success_rate": 0.85,
-                "result_quantity": 1
-            },
-            "FS": {  # Flamebrand Sword
-                "ingredients": {
-                    "Infernal Core": 10,
-                    "Emberbark Wood": 30,
-                    "Obsidian Fang": 20
-                },
-                "success_rate": 0.85,
-                "result_quantity": 1
-            },
-            "WR": {  # Wraith-Warmed Root Stew
-                "ingredients": {
-                    "Wraith Root": 3,
-                    "Gloomy Carrots": 5
-                },
-                "success_rate": 0.9,
-                "result_quantity": 1
-            },
-            "EA": {  # Ebon Asparagus and Shadow Pea Medley
-                "ingredients": {
-                    "Ebon Asparagus": 4,
-                    "Shadow Peas": 3
-                },
-                "success_rate": 0.9,
-                "result_quantity": 1
-            },
-            "TB": {  # Twilight Broccoli Bliss Bake
-                "ingredients": {
-                    "Twilight Broccoli": 3,
-                    "Frosted Kale": 2
-                },
-                "success_rate": 0.9,
-                "result_quantity": 1
-            },
-            "FV": {  # Frostbitten Vegetable Stir-Fry
-                "ingredients": {
-                    "Frosted Kale": 2,
-                    "Ebon Asparagus": 3
-                },
-                "success_rate": 0.9,
-                "result_quantity": 1
-            },
-            "GC": {  # Gloomy Carrot Delight
-                "ingredients": {
-                    "Gloomy Carrots": 3
-                },
-                "success_rate": 0.9,
-                "result_quantity": 1
-            },
-            "SS": {  # Shadow Pea Salad
-                "ingredients": {
-                    "Shadow Peas": 4
-                },
-                "success_rate": 0.9,
-                "result_quantity": 1
-            },
-            "EM": {  # Ebon Asparagus Medley
-                "ingredients": {
-                    "Ebon Asparagus": 3
-                },
-                "success_rate": 0.9,
-                "result_quantity": 1
-            },
-            "TF": {  # Twilight Broccoli Fusion
-                "ingredients": {
-                    "Twilight Broccoli": 2
-                },
-                "success_rate": 0.9,
-                "result_quantity": 1
-            },
-            "CR": {  # Cursed Radish Medley
-                "ingredients": {
-                    "Cursed Radishes": 3
-                },
-                "success_rate": 0.9,
-                "result_quantity": 1
-            },
-            "FK": {  # Frosted Kale Bowl
-                "ingredients": {
-                    "Frosted Kale": 4
-                },
-                "success_rate": 0.9,
-                "result_quantity": 1
-            },
-            "SM": {  # Shadow Pea & Tiny Meat Skewers
-                "ingredients": {
-                    "Tiny Meat": 2,
-                    "Shadow Peas": 3,
-                    "Ebon Asparagus": 2
-                },
-                "success_rate": 0.9,
-                "result_quantity": 1
-            },
-            "GM": {  # Grilled Medium Meat & Frosted Kale Salad
-                "ingredients": {
-                    "Medium Meat": 3,
-                    "Frosted Kale": 2,
-                    "Chilling Brussels Sprouts": 2
-                },
-                "success_rate": 0.9,
-                "result_quantity": 1
-            },
-            "CT": {  # Cursed Radish & Tiny Meat Stir-Fry
-                "ingredients": {
-                    "Tiny Meat": 2,
-                    "Cursed Radishes": 3,
-                    "Shadowleaf Spinach": 2
-                },
-                "success_rate": 0.9,
-                "result_quantity": 1
-            },
-            "RTM": {  # Roasted Tiny Meat
-                "ingredients": {
-                    "Tiny Meat": 1
-                },
-                "success_rate": 0.9,
-                "result_quantity": 1
-            },
-            "RMM": {  # Roasted Medium Meat
-                "ingredients": {
-                    "Medium Meat": 1
-                },
-                "success_rate": 0.9,
-                "result_quantity": 1
-            },
-            "RLM": {  # Roasted Large Meat
-                "ingredients": {
-                    "Large Meat": 1
-                },
-                "success_rate": 0.9,
-                "result_quantity": 1
-            }
-            
-            
-    
-        }
-
-    def craft_item(self, player, recipe_name, inventory):
-        if recipe_name not in self.recipes:
-            print(f"Recipe for {recipe_name} not found!")
-            return False
-
-        recipe = self.recipes[recipe_name]
-        
-        # Display recipe ingredients regardless of crafting outcome
-        print("\nIngredients used for this recipe:")
-        for ingredient, amount in recipe["ingredients"].items():
-            print(f"- {amount}x {ingredient}")
-            
-        # Determine and display crafting outcome
-        if random.random() <= recipe["success_rate"]:
-            print(f"Successfully crafted {recipe['result_quantity']} {recipe_name}!")
-            return True
-        
-        print(f"Failed to craft {recipe_name}!")
-        return False
-
-
-# Define player character class
 class PlayerCharacter:
     def __init__(self, name, max_health, health, stamina, max_stamina, luck, protection, light, damage, status_effects):
         self.name = name
@@ -1213,76 +400,6 @@ class PlayerCharacter:
 
         return False  # Indicate that the player can act
 
-class FarmingSystem:
-    def __init__(self):
-        self.crops = {
-            "Gloomy Carrots": {"base_yield": 2, "abbrev": "GC"},
-            "Shadow Peas": {"base_yield": 3, "abbrev": "SP"},
-            "Ebon Asparagus": {"base_yield": 2, "abbrev": "EA"},
-            "Twilight Broccoli": {"base_yield": 2, "abbrev": "TB"},
-            "Cursed Radishes": {"base_yield": 3, "abbrev": "CR"},
-            "Frosted Kale": {"base_yield": 2, "abbrev": "FK"}
-        }
-        
-        self.weather_effects = {
-            "Drought": 0.0,  # Withering Gloom - 50% yield
-            "Stormy": 0.7,   # Tempest of Shadows - 70% yield
-            "Cloudy": 1.0,   # Shrouded Calm - Normal yield
-            "Rainy": 1.5     # Tears of the Eclipse - 150% yield
-        }
-
-    def plant_and_harvest(self):
-        print("\n=== FARMING MENU ===")
-        print("Available crops to plant:")
-        for crop, info in self.crops.items():
-            print(f"{info['abbrev']} - {crop}")
-
-        has_lifebloom = input("\nDo they have the Lifebloom Harvester title? (y/n): ").lower() == 'y'
-        
-        # Get current weather
-        while True:
-            print("\n" * 21)
-            print("\nCurrent weather conditions:")
-            print("1. Withering Gloom")
-            print("2. Tempest of Shadows")
-            print("3. Shrouded Calm")
-            print("4. Rainy")
-            weather_choice = input("Enter current weather (1-4): ")
-            
-            weather_map = {"1": "Drought", "2": "Stormy", "3": "Cloudy", "4": "Rainy"}
-            if weather_choice in weather_map:
-                current_weather = weather_map[weather_choice]
-                break
-            print("Invalid weather choice. Please try again.")
-
-        # Get crop choice
-        crop_input = input("\nWhat would you like to plant? (enter abbreviation): ").upper()
-        selected_crop = None
-        for crop, info in self.crops.items():
-            if info['abbrev'] == crop_input:
-                selected_crop = crop
-                break
-        
-        if not selected_crop:
-            print("Invalid crop selection!")
-            return
-
-        # Calculate and display harvest
-        base_yield = self.crops[selected_crop]['base_yield']
-        weather_multiplier = self.weather_effects[current_weather]
-        final_yield = int(base_yield * weather_multiplier)
-
-        #Add Lifebloom Harvester bonus if applicable
-        if has_lifebloom:
-            final_yield += 3
-        print("\n" * 21)
-        print("\n" * 21)
-        print("\n" * 21)
-        print(f"\n=== HARVEST RESULTS ===")
-        print(f"Weather: {current_weather}")
-        print(f"Harvested {final_yield}x {selected_crop}")
-
-# Battle system
 class Battle:
     def __init__(self, players):
         self.players = players
@@ -1291,6 +408,13 @@ class Battle:
         self.total_drops = {}  # To store total drops from this battle
         self.total_exp = 0  # To store total experience gained in this battle
         self.items_used = {}
+        self.temp_boosts = {
+            player.name: {
+                'damage': 0,
+                'protection': 0,
+                'turns_remaining': 0
+            } for player in players
+        }
 
         # Create items
         self.items = [
@@ -1364,7 +488,7 @@ class Battle:
                     {"tiny meat": 0.7,"resin": 0.2,"fur":0.8}, 
                     (10, 20), False, [], 
                     special_ability="", luck=25),
-            Creature("Fissure Frolicker", "FF", "Shattered Plains", 8, 200, 
+            Creature("Fissure Frolicker", "FF", "Shattered Plains", 8, 310, 
                     {"medium meat": 0.7,"pulp": 0.2,"pelt":0.8}, 
                     (10, 20), True, ["poison"], 
                     special_ability="", luck=28),
@@ -1497,7 +621,31 @@ class Battle:
             ("Cinderglade", "Gloom Peaks"): 10,
             ("Cinderglade", "Obsidian Dunes"): 10,
         }
+    def apply_temp_boost(self, player, stat_type, amount, duration):
+        """Apply a temporary stat boost to a player"""
+        self.temp_boosts[player.name][stat_type] += amount
+        self.temp_boosts[player.name]['turns_remaining'] = duration
+        
+        # Apply the boost
+        if stat_type == 'damage':
+            player.damage += amount
+        elif stat_type == 'protection':
+            player.protection += amount
 
+    def update_temp_boosts(self):
+        """Update temporary stat boosts at the end of each turn"""
+        for player_name, boosts in self.temp_boosts.items():
+            if boosts['turns_remaining'] > 0:
+                boosts['turns_remaining'] -= 1
+                
+                # Remove expired boosts
+                if boosts['turns_remaining'] == 0:
+                    player = next(p for p in self.players if p.name == player_name)
+                    player.damage -= boosts['damage']
+                    player.protection -= boosts['protection']
+                    boosts['damage'] = 0
+                    boosts['protection'] = 0
+                    
     def choose_target(self, for_heal=False):
         """
         Let the player choose a target (creature or player)
@@ -1627,7 +775,8 @@ class Battle:
 
             # After prey hunting sequence completes (whether successful or not)
             if random.random() <= 0.5:  # 50% chance for creature encounter
-                print("\nA wild creature appears!")
+                print("\n" * 3)  # Print 21 empty lines to clear screen
+                print("\n=== ENCOUNTER ===")
                 
                 # Get the current biome based on the selected pet
                 current_biome = None
@@ -1663,9 +812,10 @@ class Battle:
                         self.creatures.append(new_creature)
                     
                     print(f"You've encountered {num_creatures} creatures in {current_biome}!")
+                    print("\n=== ENCOUNTER ===")
                     self.start_battle()
         else:
-            print("\nNo pets found.")
+            print("\n FAILURE: No pets found.")
 
     def craft_menu(self, player):
         crafting = CraftingSystem()
@@ -1809,7 +959,7 @@ class Battle:
                 creature_counts[creature.name] = creature_counts.get(creature.name, 0) + 1
             
             # Clear screen and display formatted encounter message
-            print("\n" * 21)  # Print 21 empty lines to clear screen
+            print("\n" * 3)  # Print 21 empty lines to clear screen
             print("\n=== ENCOUNTER ===")
             print("")
             encounter_message = "While gathering, you've encountered: "
@@ -2325,6 +1475,7 @@ class Battle:
 
         battle_ended = False
         while not battle_ended:
+            self.update_temp_boosts()
             if self.current_creature_index >= len(self.creatures):
                 print("All creatures have been defeated!")
                 battle_ended = True
@@ -2382,7 +1533,7 @@ class Battle:
                                     damage_dealt = max(active_creature.damage - player.protection, 0)
                                     player.health -= damage_dealt
                                     print(f"{active_creature.name} attacks {player.name} for {damage_dealt} damage after protection!")
-                                    print(f"{target.name}'s Health: {players.health}")
+                                    print(f"{player.name}'s Health: {player.health}/{player.max_health}")
                                 print("")
                                 continue
                             
@@ -2719,6 +1870,14 @@ class Battle:
                     
 
     def end_battle(self):
+        for player_name, boosts in self.temp_boosts.items():
+            if boosts['damage'] > 0 or boosts['protection'] > 0:
+                player = next(p for p in self.players if p.name == player_name)
+                player.damage -= boosts['damage']
+                player.protection -= boosts['protection']
+                boosts['damage'] = 0
+                boosts['protection'] = 0
+                boosts['turns_remaining'] = 0
         print("")
         print("")
         print("")
@@ -2732,7 +1891,8 @@ class Battle:
             print(f"Damage: {player.damage}")
             print(f"Protection: {player.protection}")
             print(f"Status Effects: {', '.join(player.status_effects) if player.status_effects else 'None'}")
-
+            print("")
+            print("")
             # Only remove 'daze' status effect after battle
             if 'daze' in player.status_effects:
                 player.status_effects.remove('daze')
@@ -2770,12 +1930,3 @@ class Battle:
             if player.health <= 0:
                 print(f"{player.name} has been defeated!")
             return False  # Return False to indicate the battle continues
-
-# Main Execution
-players = []  # Start with an empty list of players
-
-# Initialize battle
-battle = Battle(players)
-
-# Start the game and prompt for actions immediately
-battle.choose_action()
