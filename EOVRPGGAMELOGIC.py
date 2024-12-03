@@ -108,8 +108,8 @@ class Item:
             print(f"{target.name} uses {self.name} and heals {self.effect_value[0]} HP and recovers {self.effect_value[1]} stamina!")
 
         elif self.item_type == "boost":
-            target.damage += self.effect_value
-            print(f"{target.name} uses {self.name} and increases their damage by {self.effect_value}!")
+            target.temp_damage += self.effect_value
+            print(f"{target.name} uses {self.name} and temporarily increases their damage by {self.effect_value}!")
 
         elif self.item_type == "damage":
             target.health -= self.effect_value
@@ -118,287 +118,6 @@ class Item:
 
         status_effects = ','.join(target.status_effects) if target.status_effects else "None"
         print(f"{target.name},{target.max_health},{target.health},{target.stamina},{target.max_stamina},{target.luck},{target.protection},{target.light},{target.damage},{status_effects}")
-
-class PlayerCharacter:
-    def __init__(self, name, max_health, health, stamina, max_stamina, luck, protection, light, damage, status_effects):
-        self.name = name
-        self.max_health = max_health
-        self.health = health
-        self.stamina = stamina
-        self.max_stamina = max_stamina  # New attribute for max stamina
-        self.luck = luck
-        self.protection = protection
-        self.light = light
-        self.damage = damage
-        self.status_effects = status_effects.split(';') if status_effects else []  # List to track status effects
-        self.inventory = []  # Initialize inventory for items
-
-    def __repr__(self):
-        return f"{self.name}: HP={self.health}/{self.max_health}, Stamina={self.stamina}/{self.max_stamina}, Luck={self.luck}, Protection={self.protection}, Light={self.light}, Damage={self.damage}, Status Effects={self.status_effects}"
-
-    @staticmethod
-    def from_input():
-        print("\n" * 21)
-        data_line = input("Who is doing this action?): ")
-        name, max_health, health, stamina, max_stamina, luck, protection, light, damage, *status_effects = data_line.split(",")
-        return PlayerCharacter(
-            name.strip(),
-            int(max_health),
-            int(health),
-            int(stamina),
-            int(max_stamina),  # Use the input for max stamina
-            int(luck),
-            int(protection),
-            int(light),
-            int(damage),
-            ';'.join(status_effects).strip()  # Join back the effects if there are multiple
-        )
-
-    def heal(self, target):
-        heal_amount = 20  # Base healing amount
-        target.health = min(target.health + heal_amount, target.max_health)  # Prevent overhealing
-        print(f"{self.name} heals {target.name} for {heal_amount} HP!")
-        print(f"{target.name}'s health is now {target.health}/{target.max_health}")
-
-    # Ability to heal another player or self
-    def triage(self, target):
-        if self.stamina >= 3:  # Cost of ability
-            heal_amount = 25  # Amount to heal
-            self.stamina -= 5  # Cost of ability
-            target.health = min(target.max_health, target.health + heal_amount)
-            print("\n" * 21)
-            print(f"\n--- Actions during {self.name}'s turn ---")
-            print(f"{self.name} uses TRIAGE and heals {target.name} for {heal_amount} HP!")
-        else:
-            print("\n" * 21)
-            print(f"\n--- Actions during {self.name}'s turn ---")
-            print(f"{self.name} does not have enough stamina to use TRIAGE!")
-
-    def aid_surge(self, target):
-        if self.stamina >= 20:  # Cost of ability
-            heal_amount = 50  # Amount to heal
-            self.stamina -= 20  # Cost of ability
-            target.health = min(target.max_health, target.health + heal_amount)
-            print("\n" * 21)
-            print(f"\n--- Actions during {self.name}'s turn ---")
-            print(f"{self.name} uses AID SURGE and heals {target.name} for {heal_amount} HP!")
-        else:
-            print("\n" * 21)
-            print(f"\n--- Actions during {self.name}'s turn ---")
-            print(f"{self.name} does not have enough stamina to use AID SURGE!")
-            
-    def emergency_heal(self, target):
-        if self.stamina >= 7:  # Cost of ability
-            heal_amount = 25  # Amount to heal
-            self.stamina -= 7  # Cost of ability
-            target.health = min(target.max_health, target.health + heal_amount)
-            print("\n" * 21)
-            print(f"\n--- Actions during {self.name}'s turn ---")
-            print(f"{self.name} uses EMERGENCY HEAL and heals {target.name} for {heal_amount} HP!")
-        else:
-            print("\n" * 21)
-            print(f"\n--- Actions during {self.name}'s turn ---")
-            print(f"{self.name} does not have enough stamina to use AID SURGE!")
-# double_strike
-    # Ability to add protection
-    def fortify(self):
-        if self.stamina >= 3:  # Cost of ability
-            self.stamina -= 3
-            additional_protection = 5  # Extra protection
-            self.protection += additional_protection
-            print("\n" * 21)
-            print(f"\n--- Actions during {self.name}'s turn ---")
-            print(f"{self.name} uses FORTIFY and gains {additional_protection} protection!")
-        else:
-            print("\n" * 21)
-            print(f"\n--- Actions during {self.name}'s turn ---")
-            print(f"{self.name} does not have enough stamina to use FORTIFY!")
-
-    def iron_bastion(self):
-        if self.stamina >= 5:  # Cost of ability
-            self.stamina -= 5
-            additional_protection = 10  # Extra protection
-            self.protection += additional_protection
-            print("\n" * 21)
-            print(f"\n--- Actions during {self.name}'s turn ---")
-            print(f"{self.name} uses IRON BASTION and gains {additional_protection} protection!")
-        else:
-            print("\n" * 21)
-            print(f"\n--- Actions during {self.name}'s turn ---")
-            print(f"{self.name} does not have enough stamina to use IRON BASTION!")
-
-    # Power attack ability for extra damage
-    def power_attack(self, target):
-        if self.stamina >= 7:  # Cost of ability
-            self.stamina -= 7
-            extra_damage = 10  # Extra damage
-            total_damage = self.damage + extra_damage
-            target.health -= total_damage
-            print("\n" * 21)
-            print(f"\n--- Actions during {self.name}'s turn ---")
-            print(f"{self.name} performs a power attack on {target.name} for {total_damage} damage!")
-        else:
-            print("\n" * 21)
-            print(f"\n--- Actions during {self.name}'s turn ---")
-            print(f"{self.name} does not have enough stamina to perform a power attack!")
-
-    def critical_precision(self, target):
-        if self.stamina >= 7:  # Cost of ability
-            self.stamina -= 7
-            extra_damage = 15  # Extra damage
-            total_damage = self.damage + extra_damage
-            target.health -= total_damage
-            print("\n" * 21)
-            print(f"\n--- Actions during {self.name}'s turn ---")
-            print(f"{self.name} uses CRITICAL PRECISION on {target.name} for {total_damage} damage!")
-        else:
-            print("\n" * 21)
-            print(f"\n--- Actions during {self.name}'s turn ---")
-            print(f"{self.name} does not have enough stamina to perform a CRITICAL PRECISION!")
-
-    def poison_gas(self, target):
-        if self.stamina >= 7:  # Cost of ability
-            self.stamina -= 7
-            extra_damage = 10  # Extra damage
-            total_damage = self.damage + extra_damage
-            target.health -= total_damage
-            print("\n" * 21)
-            print(f"\n--- Actions during {self.name}'s turn ---")
-            print(f"{self.name} releases POISON GAS on {target.name} for {total_damage} damage!")
-        else:
-            print("\n" * 21)
-            print(f"\n--- Actions during {self.name}'s turn ---")
-            print(f"{self.name} does not have enough stamina to use POISON GAS!")
-
-    def ravage(self, target):
-        if self.stamina >= 20:  # Cost of ability
-            self.stamina -= 20
-            damage_per_hit = self.damage
-            total_damage = damage_per_hit * 3
-            target.health -= total_damage
-            print("\n" * 21)
-            print(f"\n--- Actions during {self.name}'s turn ---")
-            print(f"{self.name} RAVAGES {target.name} and deals {total_damage} damage!")
-        else:
-            print("\n" * 21)
-            print(f"\n--- Actions during {self.name}'s turn ---")
-            print(f"{self.name} does not have enough stamina to use RAVAGE!")
-    
-    # Double strike ability to attack twice
-    def double_strike(self, target):
-        if self.stamina >= 6:  # Cost of ability
-            self.stamina -= 6
-            damage_per_hit = self.damage
-            total_damage = damage_per_hit * 2
-            target.health -= total_damage
-            print("\n" * 21)
-            print(f"\n--- Actions during {self.name}'s turn ---")
-            print(f"{self.name} hits {target.name} with a DOUBLE STRIKE for {total_damage} damage!")
-        else:
-            print("\n" * 21)
-            print(f"\n--- Actions during {self.name}'s turn ---")
-            print(f"{self.name} does not have enough stamina to perform a DOUBLE STRIKE!")
-    def guardian_slam(self, target):
-        if self.stamina >= 10:  # Cost of ability
-            self.stamina -= 10
-            damage_per_hit = self.damage
-            total_damage = damage_per_hit * 3
-            target.health -= total_damage
-            print("\n" * 21)
-            print(f"\n--- Actions during {self.name}'s turn ---")
-            print(f"{self.name} uses GUARDIAN SLAM and deals {total_damage} damage!")
-        else:
-            print("\n" * 21)
-            print(f"\n--- Actions during {self.name}'s turn ---")
-            print(f"{self.name} does not have enough stamina to perform a GUARDIAN SLAM!")
-
-    def body_bash(self, target):
-        if self.stamina >= 10:  # Cost of ability
-            self.stamina -= 10
-            additional_protection = 5  # Extra protection
-            self.protection += additional_protection
-            extra_damage = 5  # Extra damage
-            total_damage = self.damage + extra_damage
-            target.health -= total_damage
-            print("\n" * 21)
-            print(f"\n--- Actions during {self.name}'s turn ---")
-            print(f"{self.name} uses BODY BASH and deals {total_damage} damage and gains {additional_protection} protection!")
-        else:
-            print("\n" * 21)
-            print(f"\n--- Actions during {self.name}'s turn ---")
-            print(f"{self.name} does not have enough stamina to perform a BODY BASH!")
-
-    # Rally ability to boost another player's damage
-    def rally(self):
-        if self.stamina >= 4:  # Cost of ability
-            self.stamina -= 4
-            damage_boost = 5  # Extra damage
-            
-            # Show all available players
-            print("\nAvailable players to rally:")
-            for i, player in enumerate(players, 1):
-                if player != self:  # Don't list the casting player
-                    print(f"{i}. {player.name} (Current damage: {player.damage})")
-            
-            # Get player choice
-            while True:
-                try:
-                    choice = int(input("\nChoose a player to rally (enter number): ")) - 1
-                    if 0 <= choice < len(players) and players[choice] != self:
-                        target = players[choice]
-                        target.damage += damage_boost
-                        print("\n" * 21)
-                        print(f"\n--- Actions during {self.name}'s turn ---")
-                        print("")
-                        print(f"{self.name} rallies {target.name}, increasing their damage by {damage_boost}!")
-                        print(f"{target.name}'s damage is now {target.damage}!")
-                        print("")
-                        print("")
-                        break
-                    else:
-                        print("Invalid choice. Passed.")
-                except ValueError:
-                    print("Please enter a valid number.")
-        else:
-            print("\n" * 21)
-            print(f"\n--- Actions during {self.name}'s turn ---")
-            print(f"{self.name} does not have enough stamina to rally!")
-
-    # Use an item
-    def use_item(self, item):
-        item.use(self)
-
-    def apply_status_effects(self):
-        """Apply ongoing effects like bleeding, poison, or shadow shroud, if active."""
-        damage_taken = 0
-
-        if 'shadow shroud' in self.status_effects:
-            damage_taken += SHADOW_SHROUD_DAMAGE
-            print(f"{self.name} is under Shadow Shroud and loses {SHADOW_SHROUD_DAMAGE} HP!")
-
-        if 'bleeding' in self.status_effects:
-            damage_taken += BLEED_DAMAGE
-            print(f"{self.name} is bleeding and loses {BLEED_DAMAGE} HP!")
-
-        if 'burn' in self.status_effects:
-            damage_taken += BURN_DAMAGE
-            print(f"{self.name} is burning and loses {BURN_DAMAGE} HP!")
-
-        if 'poison' in self.status_effects:
-            damage_taken += POISON_DAMAGE
-            print(f"{self.name} is poisoned and loses {POISON_DAMAGE} HP!")
-
-        # Apply the total damage taken
-        self.health -= damage_taken
-
-        # Check for dazed status and handle it
-        if 'dazed' in self.status_effects:
-            print(f"{self.name} is dazed and cannot act this turn.")
-            # Remove dazed status after it has been processed
-            self.status_effects.remove('dazed')
-            return True  # Indicate that the player cannot act
-
-        return False  # Indicate that the player can act
 
 class Battle:
     def __init__(self, players):
@@ -678,153 +397,7 @@ class Battle:
                 return None
         except ValueError:
             print("Please enter a valid number.")
-            return None
-
-    def show_bounties(self):
-        bounty_system = BountySystem()
-        available_bounties = bounty_system.get_available_bounties()
-        print("\n" * 21)
-        print("\n=== Available Bounties ===")
-        for i, bounty in enumerate(available_bounties, 1):
-            print(f"\n{i}. {bounty['type']} Bounty:")
-            print(f"Task: {bounty['task']}")
-            print(f"Reward: {bounty['reward']} glowstone")
-        
-        choice = input("\nSelect a bounty (1-3) or press Enter to skip: ")
-        if choice.isdigit() and 1 <= int(choice) <= len(available_bounties):
-            selected_bounty = available_bounties[int(choice)-1]
-            print(f"\nYou've accepted the bounty: {selected_bounty['task']}")
-            print(f"Complete this task to earn {selected_bounty['reward']} glowstone!")
-            print("\n===               ===")
-            return selected_bounty
-        return None
-
-    def reset_all_creatures(self):
-        """Reset health for all creatures in the battle."""
-        for creature in self.creatures:
-            creature.reset_health()
-
-    def hunt_prey(self):
-        # Initial prey hunting chance (30%)
-        if random.random() <= 0.55:
-            # Existing pet hunting logic
-            pet_types = {
-                "Pup": {"abbrev": "PU", "rewards": (1, 5), "biome": "Cinderglade"},
-                "Pangolin": {"abbrev": "PA", "rewards": (5, 10), "biome": "Veilmarsh"},
-                "Wispfly": {"abbrev": "WF", "rewards": (10, 20), "biome": "Gloom Peaks"},
-                "Shardlizard": {"abbrev": "SL", "rewards": (15, 25), "biome": "Shattered Plains"}
-            }
-            
-            # Display available pets with abbreviations
-            print("\nAvailable pets:")
-            for pet, info in pet_types.items():
-                print(f"{pet} ({info['abbrev']})")
-            
-            # Get pet choice from user
-            pet_input = input("Which pet would you like to catch? (name or abbreviation): ").upper()
-            stamina_cost = 5
-
-            player = self.players[0]
-            
-            if player.stamina < stamina_cost:
-                print(f"Not enough stamina to capture a pet! Required: {stamina_cost}")
-                return
-
-            # Find the pet by name or abbreviation
-            selected_pet = None
-            for pet, info in pet_types.items():
-                if pet_input == info['abbrev'] or pet_input == pet.upper():
-                    selected_pet = pet
-                    break
-            
-            if not selected_pet:
-                print("That pet is not available to catch!")
-                return
-            
-            try:
-                num_pets = int(input("How many would you like to catch? "))
-                player.stamina -= stamina_cost
-                if num_pets < 1:
-                    print("You must try to catch at least 1!")
-                    return
-            except ValueError:
-                print("Please enter a valid number!")
-                return
-                
-            successful_catches = 0
-            total_glowstone = 0
-            
-            for i in range(num_pets):
-                pet_direction = random.choice(["left", "right", "forward", "backward"])
-                guess = input(f"\nPet #{i+1} is running! Guess left, right, forward, backward!: ").lower()
-                
-                if guess == pet_direction:
-                    print("Success! You caught the pet!")
-                    print(f"{player.name},{player.max_health},{player.health},{player.stamina},{player.max_stamina},{player.luck},{player.protection},{player.light},{player.damage},{player.status_effects}")
-                    successful_catches += 1
-                    glowstone = random.randint(*pet_types[selected_pet]['rewards'])
-                    total_glowstone += glowstone
-                    print(f"You earned {glowstone} glowstone!")
-                else:
-                    print(f"The pet got away! It ran {pet_direction}!")
-                    print(f"{player.name},{player.max_health},{player.health},{player.stamina},{player.max_stamina},{player.luck},{player.protection},{player.light},{player.damage},{player.status_effects}")
-                    
-            print(f"\nCatching Results:")
-            print(f"Pets Caught: {successful_catches}/{num_pets}")
-            print(f"Total Glowstone Earned: {total_glowstone}")
-
-            # After prey hunting sequence completes (whether successful or not)
-            if random.random() <= 0.5:  # 50% chance for creature encounter
-                print("\n" * 3)  # Print 21 empty lines to clear screen
-                print("\n=== ENCOUNTER ===")
-                
-                # Get the current biome based on the selected pet
-                current_biome = None
-                for pet, info in pet_types.items():
-                    if pet_input == info['abbrev'] or pet_input == pet.upper():
-                        current_biome = info['biome']
-                        break
-                
-                if current_biome and current_biome in self.biomes:
-                    # Clear any existing creatures
-                    self.creatures.clear()
-                    
-                    # Get available creatures for this biome
-                    biome_creatures = self.biomes[current_biome]
-                    
-                    # Spawn 1-2 random creatures from this biome
-                    num_creatures = random.randint(1, 2)
-                    selected_creatures = random.choices(biome_creatures, k=num_creatures)
-                    
-                    # Create the creature instances
-                    for creature_template in selected_creatures:
-                        new_creature = Creature(
-                            creature_template.name,
-                            creature_template.abbreviation,
-                            creature_template.biome,
-                            creature_template.damage,
-                            creature_template.max_health,
-                            creature_template.drops,
-                            creature_template.exp_range,
-                            creature_template.is_predator,
-                            creature_template.status_effects
-                        )
-                        self.creatures.append(new_creature)
-                    
-                    print(f"You've encountered {num_creatures} creatures in {current_biome}!")
-                    print("\n=== ENCOUNTER ===")
-                    self.start_battle()
-        else:
-            print("\n FAILURE: No pets found.")
-
-    def craft_menu(self, player):
-        crafting = CraftingSystem()
-        
-        while True:
-            recipe_name = input("Enter the name of the item to craft or 'exit' to leave: ")
-            crafting.craft_item(player, recipe_name, player.inventory)
-            if recipe_name == 'exit':
-                break
+            retubreak
             
 
     def shadow_lottery(self):
@@ -926,11 +499,14 @@ class Battle:
         if random.random() < chance:
             amount = random.randint(1, 3)
             print(f"\nSuccess! You gathered {amount} {selected_plant}(s)")
-            print(f"{player.name},{player.max_health},{player.health},{player.stamina},{player.max_stamina},{player.luck},{player.protection},{player.light},{player.damage},{player.status_effects}")
+            print(f"\n=== PLAYER LINE ===")
+            print(f"{player.name},{player.max_health},{player.health},{player.stamina},{player.max_stamina},{player.luck},{player.protection},{player.light},{player.damage},{status_effects}")
+            print(f"\n=== PLAYER LINE ===")
         else:
             print(f"\nFailed to gather {selected_plant}")
-            print(f"{player.name},{player.max_health},{player.health},{player.stamina},{player.max_stamina},{player.luck},{player.protection},{player.light},{player.damage},{player.status_effects}")
-
+            print(f"\n=== PLAYER LINE ===")
+            print(f"{player.name},{player.max_health},{player.health},{player.stamina},{player.max_stamina},{player.luck},{player.protection},{player.light},{player.damage},{status_effects}")
+            print(f"\n=== PLAYER LINE ===")
         # Inside gather_plants method, replace the creature encounter section with:
         if random.random() < self.gathering_encounter_chances[full_biome]:
             creatures = self.biomes[full_biome]
@@ -1094,13 +670,15 @@ class Battle:
             if choice == '1':
                 player.stamina = min(player.stamina + 10, player.max_stamina)
                 print(f"{player.name} takes a nap and recovers 10 stamina. Current stamina: {player.stamina}/{player.max_stamina}")
-                print(f"{player.name},{player.max_health},{player.health},{player.stamina},{player.max_stamina},{player.luck},{player.protection},{player.light},{player.damage},{player.status_effects}")
-                
+                print(f"\n=== PLAYER LINE ===")
+                print(f"{player.name},{player.max_health},{player.health},{player.stamina},{player.max_stamina},{player.luck},{player.protection},{player.light},{player.damage},{status_effects}")
+                print(f"\n=== PLAYER LINE ===")
             elif choice == '2':
                 player.stamina = min(player.stamina + 25, player.max_stamina)
                 print(f"{player.name} gets some sleep and recovers 25 stamina. Current stamina: {player.stamina}/{player.max_stamina}")
-                print(f"{player.name},{player.max_health},{player.health},{player.stamina},{player.max_stamina},{player.luck},{player.protection},{player.light},{player.damage},{player.status_effects}")
-                
+                print(f"\n=== PLAYER LINE ===")
+                print(f"{player.name},{player.max_health},{player.health},{player.stamina},{player.max_stamina},{player.luck},{player.protection},{player.light},{player.damage},{status_effects}")
+                print(f"\n=== PLAYER LINE ===")
             elif choice == '3':
                 # Use the Battle class's items list instead of player inventory
                 if self.items:
@@ -1161,7 +739,10 @@ class Battle:
             player.stamina -= stamina_cost
             print("\n" * 21)
             print(f"{player.name} travels from {starting_biome} to {destination_biome} and it takes {stamina_cost} stamina.")
-            print(f"{player.name},{player.max_health},{player.health},{player.stamina},{player.max_stamina},{player.luck},{player.protection},{player.light},{player.damage},{player.status_effects}")
+
+            print(f"\n=== PLAYER LINE ===")
+            print(f"{player.name},{player.max_health},{player.health},{player.stamina},{player.max_stamina},{player.luck},{player.protection},{player.light},{player.damage},{status_effects}")
+            print(f"\n=== PLAYER LINE ===")
         encounter_chance = random.randint(1, 100)
 
         if encounter_chance <= 20:
@@ -1171,7 +752,9 @@ class Battle:
                 player.stamina -= 10
                 if player.stamina < 0:
                     print("\n" * 21)
-                    print(f"{player.name},{player.max_health},{player.health},{player.stamina},{player.max_stamina},{player.luck},{player.protection},{player.light},{player.damage},{player.status_effects}")
+                    print(f"\n=== PLAYER LINE ===")
+                    print(f"{player.name},{player.max_health},{player.health},{player.stamina},{player.max_stamina},{player.luck},{player.protection},{player.light},{player.damage},{status_effects}")
+                    print(f"\n=== PLAYER LINE ===")
                     print(f"{player.name} cannot continue and the travel failed due to low stamina!")
                     return
 
@@ -1179,7 +762,10 @@ class Battle:
             event_type = random.choice(["cache", "healer"])
             if event_type == "cache":
                 print("\n" * 21)
-                print(f"{player.name},{player.max_health},{player.health},{player.stamina},{player.max_stamina},{player.luck},{player.protection},{player.light},{player.damage},{player.status_effects}")
+                
+                print(f"\n=== PLAYER LINE ===")
+                print(f"{player.name},{player.max_health},{player.health},{player.stamina},{player.max_stamina},{player.luck},{player.protection},{player.light},{player.damage},{status_effects}")
+                print(f"\n=== PLAYER LINE ===")
                 print("During your travel, the group found a hidden cache and each received a free prize!")
             elif event_type == "healer":
                 for player in players:
@@ -1216,8 +802,6 @@ class Battle:
 
     def use_item(self, player):
         print("\n" * 21)
-        print(f"\n--- Actions during {player.name}'s turn ---")
-        print("")
         print("Choose an item to use by typing its abbreviation:")
 
         abbrev = input("Enter item abbreviation: ").upper()
@@ -1238,18 +822,29 @@ class Battle:
                         # Apply item effect based on type
                         if item.item_type == 'heal':
                             target.health = min(target.health + item.effect_value, target.max_health)
+                            print("\n" * 21)
+                            print(f"\n--- Actions during {player.name}'s turn ---")
                             print(f"{target.name} healed for {item.effect_value} HP!")
                         elif item.item_type == 'remove_status':
                             if target.status_effects:
                                 target.status_effects.clear()
+                                print("\n" * 21)
+                                print(f"\n--- Actions during {player.name}'s turn ---")
                                 print(f"Removed all status effects from {target.name}!")
                         elif item.item_type == 'stamina':
                             target.stamina = min(target.stamina + item.effect_value, target.max_stamina)
+                            print("\n" * 21)
+                            print(f"\n--- Actions during {player.name}'s turn ---")
                             print(f"{target.name} recovered {item.effect_value} stamina!")
                         elif item.item_type == 'boost':
                             target.damage += item.effect_value
+                            print("\n" * 21)
+                            print(f"\n--- Actions during {player.name}'s turn ---")
+                            print(f"\n=== STAT INCREASE ===")
                             print(f"{target.name}'s damage increased by {item.effect_value}!")
-                        
+                            print(f"\n=== STAT INCREASE ===")
+                            print("")
+                            
                         self.items_used[item.name] = self.items_used.get(item.name, 0) + 1
                     else:
                         print("Invalid target selection.")
@@ -1280,7 +875,10 @@ class Battle:
                         if item.item_type == 'damage':
                             target.health -= item.effect_value
                             print(f"{target.name} felt sick and took {item.effect_value} damage!")
+
+                            print(f"\n=== PLAYER LINE ===")
                             print(f"{player.name},{player.max_health},{player.health},{player.stamina},{player.max_stamina},{player.luck},{player.protection},{player.light},{player.damage},{status_effects}")
+                            print(f"\n=== PLAYER LINE ===")
                         self.items_used[item.name] = self.items_used.get(item.name, 0) + 1
                     else:
                         print("Invalid target selection.")
@@ -1870,6 +1468,8 @@ class Battle:
                     
 
     def end_battle(self):
+        for player in self.players:
+            player.clear_temp_stats()
         for player_name, boosts in self.temp_boosts.items():
             if boosts['damage'] > 0 or boosts['protection'] > 0:
                 player = next(p for p in self.players if p.name == player_name)
@@ -1885,7 +1485,11 @@ class Battle:
         for player in self.players:
             # Show current player stats
             status_effects = ','.join(player.status_effects) if player.status_effects else "None"
+            print("")
+            print(f"\n=== PLAYER LINE ===")
             print(f"{player.name},{player.max_health},{player.health},{player.stamina},{player.max_stamina},{player.luck},{player.protection},{player.light},{player.damage},{status_effects}")
+            print(f"\n=== PLAYER LINE ===")
+            print("")
             print(f"Health: {player.health}/{player.max_health}")
             print(f"Stamina: {player.stamina}/{player.max_stamina}")
             print(f"Damage: {player.damage}")
@@ -1919,7 +1523,1297 @@ class Battle:
     def attempt_escape(self, player, active_creature):
         if random.random() < 0.4:  # 40% chance to escape
             print(f"{player.name} successfully escaped from {active_creature.name}!")
+            print(f"\n=== PLAYER LINE ===")
             print(f"{player.name},{player.max_health},{player.health},{player.stamina},{player.max_stamina},{player.luck},{player.protection},{player.light},{player.damage},{status_effects}")
+            print(f"\n=== PLAYER LINE ===")
+            return True  # Return True to indicate the battle should end
+        else:
+            # Calculate damage when escape fails
+            damage_dealt = max(active_creature.damage - player.protection, 0)
+            player.health -= damage_dealt
+            
+            print(f"{player.name} failed to escape and takes {damage_dealt} damage from {active_creature.name}!")
+            if player.health <= 0:
+                print(f"{player.name} has been defeated!")
+            return False  # Return False to indicate the battle continuesrn None
+
+    def show_bounties(self):
+        bounty_system = BountySystem()
+        available_bounties = bounty_system.get_available_bounties()
+        print("\n" * 21)
+        print("\n=== Available Bounties ===")
+        for i, bounty in enumerate(available_bounties, 1):
+            print(f"\n{i}. {bounty['type']} Bounty:")
+            print(f"Task: {bounty['task']}")
+            print(f"Reward: {bounty['reward']} glowstone")
+        
+        choice = input("\nSelect a bounty (1-3) or press Enter to skip: ")
+        if choice.isdigit() and 1 <= int(choice) <= len(available_bounties):
+            selected_bounty = available_bounties[int(choice)-1]
+            print(f"\nYou've accepted the bounty: {selected_bounty['task']}")
+            print(f"Complete this task to earn {selected_bounty['reward']} glowstone!")
+            print("\n===               ===")
+            return selected_bounty
+        return None
+
+    def reset_all_creatures(self):
+        """Reset health for all creatures in the battle."""
+        for creature in self.creatures:
+            creature.reset_health()
+
+    def hunt_prey(self):
+        # Initial prey hunting chance (30%)
+        if random.random() <= 0.55:
+            # Existing pet hunting logic
+            pet_types = {
+                "Pup": {"abbrev": "PU", "rewards": (1, 5), "biome": "Cinderglade"},
+                "Pangolin": {"abbrev": "PA", "rewards": (5, 10), "biome": "Veilmarsh"},
+                "Wispfly": {"abbrev": "WF", "rewards": (10, 20), "biome": "Gloom Peaks"},
+                "Shardlizard": {"abbrev": "SL", "rewards": (15, 25), "biome": "Shattered Plains"}
+            }
+            
+            # Display available pets with abbreviations
+            print("\nAvailable pets:")
+            for pet, info in pet_types.items():
+                print(f"{pet} ({info['abbrev']})")
+            
+            # Get pet choice from user
+            pet_input = input("Which pet would you like to catch? (name or abbreviation): ").upper()
+            stamina_cost = 5
+
+            player = self.players[0]
+            
+            if player.stamina < stamina_cost:
+                print(f"Not enough stamina to capture a pet! Required: {stamina_cost}")
+                return
+
+            # Find the pet by name or abbreviation
+            selected_pet = None
+            for pet, info in pet_types.items():
+                if pet_input == info['abbrev'] or pet_input == pet.upper():
+                    selected_pet = pet
+                    break
+            
+            if not selected_pet:
+                print("That pet is not available to catch!")
+                return
+            
+            try:
+                num_pets = int(input("How many would you like to catch? "))
+                player.stamina -= stamina_cost
+                if num_pets < 1:
+                    print("You must try to catch at least 1!")
+                    return
+            except ValueError:
+                print("Please enter a valid number!")
+                return
+                
+            successful_catches = 0
+            total_glowstone = 0
+            
+            for i in range(num_pets):
+                pet_direction = random.choice(["left", "right", "forward", "backward"])
+                guess = input(f"\nPet #{i+1} is running! Guess left, right, forward, backward!: ").lower()
+                
+                if guess == pet_direction:
+                    print("Success! You caught the pet!")
+                    print(f"\n=== PLAYER LINE ===")
+                    print(f"{player.name},{player.max_health},{player.health},{player.stamina},{player.max_stamina},{player.luck},{player.protection},{player.light},{player.damage},{status_effects}")
+                    print(f"\n=== PLAYER LINE ===")
+                    successful_catches += 1
+                    glowstone = random.randint(*pet_types[selected_pet]['rewards'])
+                    total_glowstone += glowstone
+                    print(f"You earned {glowstone} glowstone!")
+                else:
+                    print(f"The pet got away! It ran {pet_direction}!")
+                    print(f"\n=== PLAYER LINE ===")
+                    print(f"{player.name},{player.max_health},{player.health},{player.stamina},{player.max_stamina},{player.luck},{player.protection},{player.light},{player.damage},{status_effects}")
+                    print(f"\n=== PLAYER LINE ===")
+                    
+            print(f"\nCatching Results:")
+            print(f"Pets Caught: {successful_catches}/{num_pets}")
+            print(f"Total Glowstone Earned: {total_glowstone}")
+
+            # After prey hunting sequence completes (whether successful or not)
+            if random.random() <= 0.5:  # 50% chance for creature encounter
+                print("\n" * 3)  # Print 21 empty lines to clear screen
+                print("\n=== ENCOUNTER ===")
+                
+                # Get the current biome based on the selected pet
+                current_biome = None
+                for pet, info in pet_types.items():
+                    if pet_input == info['abbrev'] or pet_input == pet.upper():
+                        current_biome = info['biome']
+                        break
+                
+                if current_biome and current_biome in self.biomes:
+                    # Clear any existing creatures
+                    self.creatures.clear()
+                    
+                    # Get available creatures for this biome
+                    biome_creatures = self.biomes[current_biome]
+                    
+                    # Spawn 1-2 random creatures from this biome
+                    num_creatures = random.randint(1, 2)
+                    selected_creatures = random.choices(biome_creatures, k=num_creatures)
+                    
+                    # Create the creature instances
+                    for creature_template in selected_creatures:
+                        new_creature = Creature(
+                            creature_template.name,
+                            creature_template.abbreviation,
+                            creature_template.biome,
+                            creature_template.damage,
+                            creature_template.max_health,
+                            creature_template.drops,
+                            creature_template.exp_range,
+                            creature_template.is_predator,
+                            creature_template.status_effects
+                        )
+                        self.creatures.append(new_creature)
+                    
+                    print(f"You've encountered {num_creatures} creatures in {current_biome}!")
+                    print("\n=== ENCOUNTER ===")
+                    self.start_battle()
+        else:
+            print("\n FAILURE: No pets found.")
+
+    def craft_menu(self, player):
+        crafting = CraftingSystem()
+        
+        while True:
+            recipe_name = input("Enter the name of the item to craft or 'exit' to leave: ")
+            crafting.craft_item(player, recipe_name, player.inventory)
+            if recipe_name == 'exit':
+                break
+            
+
+    def shadow_lottery(self):
+        lottery = ShadowLottery()
+        print("\n" * 21)
+        print("\n=== SHADOW LOTTERY ===")
+        print("How many draws would you like?")
+        
+        try:
+            num_draws = int(input("Enter number of draws: "))
+            if num_draws < 1:
+                print("Must draw at least once!")
+                return
+                
+            results = lottery.draw_lottery(num_draws)
+
+            print("\n" * 21)
+            print("\n=== LOTTERY RESULTS ===")
+            for i, result in enumerate(results, 1):
+                print(f"\nDraw #{i}:")
+                print(f"Category: {result['category']}")
+                print(f"Item won: {result['item']}")
+                if result['glowstone'] > 0:
+                    print(f"Bonus: {result['glowstone']} glowstone!")
+                print("\n===          ===")
+                
+        except ValueError:
+            print("Please enter a valid number")
+
+        # Add new method to Battle class
+    def gather_plants(self, player):
+        # Check stamina first
+        stamina_cost = 5
+        if player.stamina < stamina_cost:
+            print(f"Not enough stamina to gather plants. Required: {stamina_cost}")
+            return
+
+        # Keep asking for biome until valid
+        while True:
+            current_biome = input("Which biome are you gathering in?: ").strip().capitalize()
+            full_biome = None
+            for biome, abbrev in BIOME_ABBREVIATIONS.items():
+                if current_biome.upper() == abbrev or current_biome.lower() == biome.lower():
+                    full_biome = biome
+                    break
+            
+            if full_biome and full_biome in self.biomes:
+                break
+            print("Invalid biome selected. Please try again.")
+
+        # Define plants available in each biome
+        biome_plants = {
+            "Veilmarsh": {
+                "Fiber": 0.7,
+                "Carrots": 0.7,
+                "Leaves": 0.3
+            },
+            "Shattered Plains": {
+                "Resin ": 0.5,
+                "Peas": 0.7,
+                "Pulp": 0.6
+            },
+            "Obsidian Dunes": {
+                "Shards ": 0.5,
+                "Fiber": 0.7,
+                "Essence": 0.6
+            },
+            "Gloom Peaks": {
+                "Frostshard Wood ": 0.5,
+                "Kale": 0.7,
+                "Broccoli": 0.7,
+                "Crystal": 0.6
+            },
+            "Cinderglade": {
+                "Emberbark": 0.8,
+                "Asparagus": 0.7,
+                "Radishes": 0.7,
+                "Fiber": 0.4
+            }
+        }
+
+        # Let player choose a plant
+        while True:
+            plant_choice = input("\nEnter the name or abbreviation of the plant you want to gather: ").strip()
+            selected_plant = None
+            
+            for plant in biome_plants[full_biome].keys():
+                if (plant_choice.lower() == plant.lower() or 
+                    plant_choice.upper() == PLANT_ABBREVIATIONS.get(plant, "").upper()):
+                    selected_plant = plant
+                    break
+            
+            if selected_plant:
+                break
+            print("Invalid plant selection. Please try again.")
+        chance = biome_plants[full_biome][selected_plant]
+        player.stamina -= stamina_cost
+
+        if random.random() < chance:
+            amount = random.randint(1, 3)
+            print(f"\nSuccess! You gathered {amount} {selected_plant}(s)")
+            print(f"\n=== PLAYER LINE ===")
+            print(f"{player.name},{player.max_health},{player.health},{player.stamina},{player.max_stamina},{player.luck},{player.protection},{player.light},{player.damage},{status_effects}")
+            print(f"\n=== PLAYER LINE ===")
+        else:
+            print(f"\nFailed to gather {selected_plant}")
+            print(f"\n=== PLAYER LINE ===")
+            print(f"{player.name},{player.max_health},{player.health},{player.stamina},{player.max_stamina},{player.luck},{player.protection},{player.light},{player.damage},{status_effects}")
+            print(f"\n=== PLAYER LINE ===")
+        # Inside gather_plants method, replace the creature encounter section with:
+        if random.random() < self.gathering_encounter_chances[full_biome]:
+            creatures = self.biomes[full_biome]
+            num_creatures = random.randint(1, 2)
+            
+            # Create the creature instances
+            self.creatures = []
+            for creature in random.choices(creatures, k=num_creatures):
+                new_creature = Creature(
+                    creature.name,
+                    creature.abbreviation,
+                    creature.biome,
+                    creature.damage,
+                    creature.health,  # This sets both health and max_health
+                    creature.drops,
+                    creature.exp_range,
+                    creature.is_predator,
+                    creature.status_effects.copy()  # Make a copy of status effects
+                )
+                new_creature.reset_health()  # Explicitly reset health
+                self.creatures.append(new_creature)
+            
+            # Display encounter message with specific details
+            creature_counts = {}
+            for creature in self.creatures:
+                creature_counts[creature.name] = creature_counts.get(creature.name, 0) + 1
+            
+            # Clear screen and display formatted encounter message
+            print("\n" * 3)  # Print 21 empty lines to clear screen
+            print("\n=== ENCOUNTER ===")
+            print("")
+            encounter_message = "While gathering, you've encountered: "
+            encounter_details = [f"{count} {name}" for name, count in creature_counts.items()]
+            print(encounter_message + ", ".join(encounter_details) + "!")
+            print("")
+            print("\n=== ENCOUNTER ===")
+            
+            self.start_battle()
+
+    def prompt_for_players(self):
+        num_players = int(input("Enter the number of players (0 for none at the beginning): "))
+        if num_players > 0:
+            for _ in range(num_players):
+                player_stats = PlayerCharacter.from_input()
+                self.players.append(player_stats)
+        else:
+            print("No players will be created. Starting with an empty game.")
+            return False  # Indicate no players were created
+        return True  # Indicate players were created
+
+    def choose_action(self):
+        while True:
+            print("\n" * 21)
+            action = input("What are you doing?").strip().lower()
+
+            if action == 'b':
+                if not self.players:  # If no players exist
+                    self.prompt_for_players()
+                
+                if self.players:  # Proceed with battle if players exist
+                    self.initiate_battle()
+                    continue  # Continue the loop for the next action
+
+    # Add to existing choose_action method
+            elif action == 'f':
+                farming = FarmingSystem()
+                while True:
+                    print("\n" * 10)
+                    print("\n=== FARMING MENU ===")
+                    print("1. Plant and harvest crop")
+                    print("2. Exit farming")
+                    
+                    choice = input("Choose an option: ")
+                    
+                    if choice == "1":
+                        farming.plant_and_harvest()
+                    elif choice == "2":
+                        break
+                    else:
+                        print("Invalid choice!")
+                        
+            elif action == 's':
+                if not self.players:
+                    self.prompt_for_players()
+                if self.players:
+                    self.sell_items(self.players[0])
+                continue
+                
+            elif action == 'r':
+                if not self.players:
+                    self.prompt_for_players()
+                
+                if self.players:
+                    self.recover_menu(self.players[0])
+                    continue
+
+            elif action == 'l':
+                self.shadow_lottery()
+                continue
+
+            elif action == 't':
+                if not self.players:  # If no players exist
+                    self.prompt_for_players()
+                
+                if self.players:  # Proceed with travel if players exist
+                    self.travel(self.players[0])  # Assuming you want to travel with the first player
+                    continue  # Continue the loop for the next action
+                
+            elif action == 're':
+                print("Refreshing the game...")
+                self.players.clear()  # Clear all players
+                self.creatures.clear()  # Clear all creatures
+                self.current_creature_index = 0  # Reset creature index
+                self.total_drops.clear()  # Clear drops
+                self.total_exp = 0  # Reset experience
+                self.prompt_for_players()  # Start fresh with new players
+                continue
+            
+            elif action == 'g':
+                if not self.players:
+                    self.prompt_for_players()
+                if self.players:  # Only proceed if there are players
+                    self.gather_plants(self.players[0])  # Use the first player for gathering
+                continue
+            elif action == "h":
+                if not self.players:
+                    self.prompt_for_players()
+                if self.players:
+                    self.hunt_prey()  # Using self.hunt_prey() instead of hunt_prey()
+                continue
+            
+            elif action == 'c':
+                if not self.players:
+                    self.prompt_for_players()
+                
+                if self.players:
+                    self.craft_menu(self.players[0])
+                continue
+            
+            elif action == 'bo':
+                self.show_bounties()
+                continue
+            else:
+                print("Invalid action. Try again.")
+
+    def recover_menu(self, player):
+        """Handle recovery options for the player."""
+        while True:
+            print("")
+            print("")
+            print("\nRecovery Options:")
+            print("1. Nap (Recover 10 stamina)")
+            print("2. Sleep (Recover 25 stamina)")
+            print("3. Use Item")
+            print("4. Back")
+            print("")
+            print("")
+            
+            choice = input("Choose an option: ").strip()
+            
+            if choice == '1':
+                player.stamina = min(player.stamina + 10, player.max_stamina)
+                print(f"{player.name} takes a nap and recovers 10 stamina. Current stamina: {player.stamina}/{player.max_stamina}")
+                print(f"\n=== PLAYER LINE ===")
+                print(f"{player.name},{player.max_health},{player.health},{player.stamina},{player.max_stamina},{player.luck},{player.protection},{player.light},{player.damage},{status_effects}")
+                print(f"\n=== PLAYER LINE ===")
+            elif choice == '2':
+                player.stamina = min(player.stamina + 25, player.max_stamina)
+                print(f"{player.name} gets some sleep and recovers 25 stamina. Current stamina: {player.stamina}/{player.max_stamina}")
+                print(f"\n=== PLAYER LINE ===")
+                print(f"{player.name},{player.max_health},{player.health},{player.stamina},{player.max_stamina},{player.luck},{player.protection},{player.light},{player.damage},{status_effects}")
+                print(f"\n=== PLAYER LINE ===")
+            elif choice == '3':
+                # Use the Battle class's items list instead of player inventory
+                if self.items:
+                    self.use_item(player)
+                else:
+                    print("No items available!")
+                    
+            elif choice == '4':
+                break
+                
+            else:
+                print("Invalid option. Please try again.")
+
+    def travel(self, player):
+        """Handle multiple players traveling from one biome to another using full names or abbreviations."""
+        # Get starting biome
+        start_input = input("Where are you starting from? (name or abbreviation): ").strip()
+        starting_biome = None
+        
+        # Check for both full name and abbreviation
+        for biome, abbrev in BIOME_ABBREVIATIONS.items():
+            if start_input.upper() == abbrev or start_input.lower() == biome.lower():
+                starting_biome = biome
+                break
+        
+        if not starting_biome or starting_biome not in self.biomes:
+            print("Invalid starting biome. Please choose a valid biome.")
+            return
+
+        # Get destination biome
+        dest_input = input("Which biome would you like to travel to? (name or abbreviation): ").strip()
+        destination_biome = None
+        
+        # Check for both full name and abbreviation
+        for biome, abbrev in BIOME_ABBREVIATIONS.items():
+            if dest_input.upper() == abbrev or dest_input.lower() == biome.lower():
+                destination_biome = biome
+                break
+        
+        if not destination_biome or destination_biome not in self.biomes:
+            print("Invalid destination biome. Please choose a valid biome.")
+            return
+
+        stamina_cost = self.travel_costs.get((starting_biome, destination_biome))
+        if stamina_cost is None:
+            print(f"You cannot travel from {starting_biome} to {destination_biome}.")
+            return
+
+        # Check if all players have enough stamina
+        for player in players:
+            if player.stamina < stamina_cost:
+                print("\n" * 21)
+                print(f"{player.name} does not have enough stamina to travel to {destination_biome}.")
+                return
+
+        # If we get here, all players have enough stamina, so deduct it
+        for player in players:
+            player.stamina -= stamina_cost
+            print("\n" * 21)
+            print(f"{player.name} travels from {starting_biome} to {destination_biome} and it takes {stamina_cost} stamina.")
+
+            print(f"\n=== PLAYER LINE ===")
+            print(f"{player.name},{player.max_health},{player.health},{player.stamina},{player.max_stamina},{player.luck},{player.protection},{player.light},{player.damage},{status_effects}")
+            print(f"\n=== PLAYER LINE ===")
+        encounter_chance = random.randint(1, 100)
+
+        if encounter_chance <= 20:
+        
+            print("During travel, the group encountered bad weather, losing 10 stamina each.")
+            for player in players:
+                player.stamina -= 10
+                if player.stamina < 0:
+                    print("\n" * 21)
+                    print(f"\n=== PLAYER LINE ===")
+                    print(f"{player.name},{player.max_health},{player.health},{player.stamina},{player.max_stamina},{player.luck},{player.protection},{player.light},{player.damage},{status_effects}")
+                    print(f"\n=== PLAYER LINE ===")
+                    print(f"{player.name} cannot continue and the travel failed due to low stamina!")
+                    return
+
+        elif encounter_chance <= 50:
+            event_type = random.choice(["cache", "healer"])
+            if event_type == "cache":
+                print("\n" * 21)
+                
+                print(f"\n=== PLAYER LINE ===")
+                print(f"{player.name},{player.max_health},{player.health},{player.stamina},{player.max_stamina},{player.luck},{player.protection},{player.light},{player.damage},{status_effects}")
+                print(f"\n=== PLAYER LINE ===")
+                print("During your travel, the group found a hidden cache and each received a free prize!")
+            elif event_type == "healer":
+                for player in players:
+                    player.health = player.max_health
+                    player.stamina = player.max_stamina
+                    print("\n" * 21)
+                    print(f"{player.name}'s stats are now: HP={player.health}/{player.max_health}, Stamina={player.stamina}/{player.max_stamina}")
+                print("During your travel, you encountered a healer who restored everyone's stats to full!")
+
+        else:
+            self.creatures.clear()
+            self.current_creature_index = 0  # Reset the creature index
+            creatures = self.biomes[destination_biome]
+            num_creatures = random.randint(1, 3)
+
+            self.creatures = []
+            for creature in random.choices(creatures, k=num_creatures):
+                new_creature = Creature(
+                    creature.name,
+                    creature.abbreviation,
+                    creature.biome,
+                    creature.damage,
+                    creature.health,
+                    creature.drops,
+                    creature.exp_range,
+                    creature.is_predator,
+                    creature.status_effects.copy()
+                )
+                new_creature.reset_health()
+                self.creatures.append(new_creature)
+
+            print(f"During travel, the group encountered {len(self.creatures)} creatures!")
+            self.start_battle()
+
+    def use_item(self, player):
+        print("\n" * 21)
+        print("Choose an item to use by typing its abbreviation:")
+
+        abbrev = input("Enter item abbreviation: ").upper()
+        item = next((i for i in self.items if i.abbreviation == abbrev), None)
+        
+        if item:
+            # For healing/support items, allow targeting other players
+            if item.item_type in ['heal', 'remove_status', 'stamina', 'boost']:
+                print("\nChoose target player:")
+                for idx, player in enumerate(self.players, 1):
+                    print(f"{idx}. {player.name} - HP: {player.health}/{player.max_health}")
+                
+                try:
+                    target_idx = int(input("Enter player number: ")) - 1
+                    if 0 <= target_idx < len(self.players):
+                        target = self.players[target_idx]
+                        
+                        # Apply item effect based on type
+                        if item.item_type == 'heal':
+                            target.health = min(target.health + item.effect_value, target.max_health)
+                            print("\n" * 21)
+                            print(f"\n--- Actions during {player.name}'s turn ---")
+                            print(f"{target.name} healed for {item.effect_value} HP!")
+                        elif item.item_type == 'remove_status':
+                            if target.status_effects:
+                                target.status_effects.clear()
+                                print("\n" * 21)
+                                print(f"\n--- Actions during {player.name}'s turn ---")
+                                print(f"Removed all status effects from {target.name}!")
+                        elif item.item_type == 'stamina':
+                            target.stamina = min(target.stamina + item.effect_value, target.max_stamina)
+                            print("\n" * 21)
+                            print(f"\n--- Actions during {player.name}'s turn ---")
+                            print(f"{target.name} recovered {item.effect_value} stamina!")
+                        elif item.item_type == 'boost':
+                            target.damage += item.effect_value
+                            print("\n" * 21)
+                            print(f"\n--- Actions during {player.name}'s turn ---")
+                            print(f"\n=== STAT INCREASE ===")
+                            print(f"{target.name}'s damage increased by {item.effect_value}!")
+                            print(f"\n=== STAT INCREASE ===")
+                            print("")
+                            
+                        self.items_used[item.name] = self.items_used.get(item.name, 0) + 1
+                    else:
+                        print("Invalid target selection.")
+                except ValueError:
+                    print("Please enter a valid number.")
+            else:
+                # For offensive items, show all possible targets
+                print("\nChoose target:")
+                all_targets = []
+                
+                # Add creatures to targets
+                for creature in self.creatures:
+                    if creature.health > 0:
+                        all_targets.append(('creature', creature))
+                
+                # Add players to targets
+                for player in self.players:
+                    all_targets.append(('player', player))
+                
+                # Display all targets
+                for idx, (target_type, target) in enumerate(all_targets, 1):
+                    print(f"{idx}. {target.name} ({target_type}) - HP: {target.health}/{target.max_health}")
+                
+                try:
+                    target_idx = int(input("Enter target number: ")) - 1
+                    if 0 <= target_idx < len(all_targets):
+                        target_type, target = all_targets[target_idx]
+                        if item.item_type == 'damage':
+                            target.health -= item.effect_value
+                            print(f"{target.name} felt sick and took {item.effect_value} damage!")
+
+                            print(f"\n=== PLAYER LINE ===")
+                            print(f"{player.name},{player.max_health},{player.health},{player.stamina},{player.max_stamina},{player.luck},{player.protection},{player.light},{player.damage},{status_effects}")
+                            print(f"\n=== PLAYER LINE ===")
+                        self.items_used[item.name] = self.items_used.get(item.name, 0) + 1
+                    else:
+                        print("Invalid target selection.")
+                except ValueError:
+                    print("Please enter a valid number.")
+        else:
+            print("Item not found.")
+
+    def join_new_player(self):
+        """Handle the joining of a new player during the battle."""
+        print("")
+        print("")
+        print("")
+        print("\n--- A new player wants to join the battle! ---")
+        new_player = PlayerCharacter.from_input()  # Create a new player character
+        self.players.append(new_player)  # Add to the existing list of players
+        print(f"{new_player.name} has joined the battle!")
+        print("\n---                                        ---")
+
+    def roar_of_need(self):
+        # Get the current player (assuming it's the first player's turn)
+        current_player = self.players[0]
+
+        # Check if player has enough stamina
+        if current_player.stamina >= 10:  # Cost of ability
+            current_player.stamina -= 10
+            new_player = PlayerCharacter.from_input()  # Create a new player character
+            self.players.append(new_player)  # Add to the existing list of players
+            print(f"{new_player.name} has joined the battle!")
+            print("\n---                                        ---")
+        else:
+            print(f"Not enough stamina! Required: 10, Current: {current_player.stamina}")
+
+    def sell_items(self, player):
+        has_trader = input("Do you have the Budgeteer title? (y/n): ").lower() == 'y'
+        price_multiplier = 1.2 if has_trader else 1.0
+        
+        # Define base item prices with abbreviations
+        item_prices = {
+            # Armor prices
+            "Ethereal Crown": {"price": 250, "abbrev": "EC"},
+            "Ethereal Robes": {"price": 300, "abbrev": "ER"},
+            "Ethereal Greaves": {"price": 300, "abbrev": "EG"},
+            
+            "Shadow Hood": {"price": 200, "abbrev": "SH"},
+            "Shadow Cloak": {"price": 300, "abbrev": "SC"},
+            "Shadow Boots": {"price": 250, "abbrev": "SHB"},
+            
+            "Ashen Helm": {"price": 200, "abbrev": "AH"},
+            "Ashen Breastplate": {"price": 250, "abbrev": "ABP"},
+            "Ashen Treads": {"price": 300, "abbrev": "AT"},
+
+            "Crimson Scale Helm": {"price": 200, "abbrev": "CH"},
+            "Crimson Scale Breastplate": {"price": 300, "abbrev": "CB"},
+            "Crimson Scale Legguards": {"price": 250, "abbrev": "CS"},
+
+            "Spectral Helm": {"price": 200, "abbrev": "SPH"},
+            "Spectral Chestplate": {"price": 300, "abbrev": "SPC"},
+            "Spectral Greaves": {"price": 250, "abbrev": "SG"},
+
+            "Obsidian Helm": {"price": 250, "abbrev": "OH"},
+            "Obsidian Breastplate": {"price": 350, "abbrev": "OB"},
+            "Obsidian Legguards": {"price": 300, "abbrev": "OL"},
+
+            "Crimson Longbow": {"price": 150, "abbrev": "CL"},
+            "Wraith Dagger": {"price": 150, "abbrev": "WD"},
+            "Flamebrand Sword": {"price": 150, "abbrev": "FS"},
+            
+            # Materials prices
+            "Wraith Silk": {"price": 50, "abbrev": "WS"},
+            "Spectral Essence": {"price": 60, "abbrev": "SE"},
+            "Phantom Threads": {"price": 55, "abbrev": "PT"},
+            "Infernal Core": {"price": 60, "abbrev": "IC"},
+            
+            # Food prices
+            "Wraith-Warmed Root Stew": {"price": 50, "abbrev": "WR"},
+            "Asparagus Medley": {"price": 50, "abbrev": "AS"},
+            "Twilight Broccoli Bliss": {"price": 50, "abbrev": "TB"},
+            "Frostbitten Vegetable Stir-Fry": {"price": 50, "abbrev": "FV"},
+
+            "Gloomy Carrot Delight": {"price": 60, "abbrev": "GC"},
+            "Shadow Pea Salad": {"price": 55, "abbrev": "SS"},
+            "Asparagus Pea Medley": {"price": 55, "abbrev": "AA"},
+            "Twilight Broccoli Fusion": {"price": 55, "abbrev": "TF"},
+
+            "Cursed Radish Medley": {"price": 55, "abbrev": "CR"},
+            "Shadow Pea & Tiny Meat Skewers": {"price": 55, "abbrev": "SM"},
+            "Grilled Medium Meat & Frosted Kale Salad": {"price": 55, "abbrev": "GM"},
+            "Gloomy Carrot": {"price": 4, "abbrev": "CA"},
+            "Shadow Peas": {"price": 4, "abbrev": "PE"},
+            "Ebon Asparagus": {"price": 4, "abbrev": "AS"},
+            "Twilight Broccoli": {"price": 4, "abbrev": "BR"},
+            "Cursed Radishes": {"price": 4, "abbrev": "RA"},
+            "Frosted Kale": {"price": 4, "abbrev": "KA"},
+            "Tiny Meat": {"price": 4, "abbrev": "TI"},
+            "Medium Meat": {"price": 12, "abbrev": "ME"},
+            "Large Meat": {"price": 15, "abbrev": "LA"},
+            
+            # Drops prices
+            "Fiber": {"price": 3, "abbrev": "FBR"},
+            "Leaves": {"price": 2, "abbrev": "LVS"},
+            "Essence": {"price": 5, "abbrev": "ES"},
+            "Scale": {"price": 4, "abbrev": "SC"},
+            "Claw": {"price": 6, "abbrev": "CL"},
+            "Feather": {"price": 3, "abbrev": "FT"},
+            "Hide": {"price": 5, "abbrev": "HD"},
+            "Bone": {"price": 4, "abbrev": "BN"}
+        }
+        
+        print("\n=== SELLING MENU ===")
+        if has_trader:
+            print("Trader title active: +20% selling prices!")
+        
+        # Create reverse lookup dictionary for abbreviations
+        abbrev_to_item = {info["abbrev"]: item_name for item_name, info in item_prices.items()}
+        
+        item_input = input("\nWhat would you like to sell? (full name or abbreviation, or 'exit'): ").upper()
+        if item_input.lower() == 'exit':
+            return
+            
+        # Check if input matches either full name or abbreviation
+        item_to_sell = None
+        if item_input in abbrev_to_item:
+            item_to_sell = abbrev_to_item[item_input]
+        elif item_input in item_prices:
+            item_to_sell = item_input
+            
+        if item_to_sell:
+            quantity = int(input(f"How many {item_to_sell} would you like to sell?: "))
+            base_price = item_prices[item_to_sell]["price"]
+            adjusted_price = int(base_price * price_multiplier)
+            total_price = adjusted_price * quantity
+            print(f"\nSold {quantity}x {item_to_sell} for {total_price} Glowstone!")
+        else:
+            print("That item cannot be sold!")
+    
+    def initiate_battle(self):
+        #print("Choose a creature to fight:")
+    
+        #for creature in self.creature_templates:
+            #print(f"{creature.abbreviation}: {creature.name}")
+
+        creature_abbrev = input("Enter the abbreviation of the creature to battle: ").strip().upper()
+
+        # Find the selected creature
+        selected_creature = next((c for c in self.creature_templates if c.abbreviation == creature_abbrev), None)
+        if not selected_creature:
+            print("Invalid creature abbreviation.")
+            return
+
+        num_creatures = random.randint(1, 4)  # Roll for 1 to 4 of the selected creature
+        self.creatures = [Creature(
+            selected_creature.name,
+            selected_creature.abbreviation,
+            selected_creature.biome,
+            selected_creature.damage,
+            selected_creature.max_health,
+            selected_creature.drops,
+            selected_creature.exp_range,
+            selected_creature.is_predator,
+            selected_creature.status_effects
+        ) for _ in range(num_creatures)]
+        print("\n" * 21)
+        print("\n--- Creatures Encountered ---")
+        print(f"You will face {num_creatures} {selected_creature.name}(s)!")
+
+        # Display the creatures being fought
+        for creature in self.creatures:
+            print(f"- {creature}")
+        
+
+        self.current_creature_index = 0  # Reset index for the new battle
+        self.start_battle()
+
+    def start_battle(self):
+        current_creature = self.creatures[self.current_creature_index]
+    
+        # Display battle status
+        print(f"\nBattle with {current_creature.name}")
+        print(f"{current_creature.name}'s Health: {current_creature.health}")
+        
+        # Display each player's health
+        for player in self.players:
+            print(f"{player.name}'s Health: {player.health}")
+        # Reset total drops and experience for the new battle
+        self.total_drops = {}
+        self.total_exp = 0
+
+        # Ensure every creature starts with full health
+        for creature in self.creatures:
+            creature.reset_health()
+
+        battle_ended = False
+        while not battle_ended:
+            self.update_temp_boosts()
+            if self.current_creature_index >= len(self.creatures):
+                print("All creatures have been defeated!")
+                battle_ended = True
+                break
+
+            # Get the currently active creature
+            active_creature = self.creatures[self.current_creature_index]
+
+            # Check if the active creature is still alive
+            while active_creature.health <= 0:
+                print(f"{active_creature.name} has fallen!")
+                self.current_creature_index += 1
+                if self.current_creature_index >= len(self.creatures):
+                    print("All creatures have been defeated!")
+                    return  # End battle
+                active_creature = self.creatures[self.current_creature_index]
+            print("")
+            print("\n--- Current Creature ---")
+            print(f"\nYou are facing a {active_creature.name} with {active_creature.health} HP.")
+            print("\n---                  ---")
+            print("")
+            # Player's turn to act
+            for player in self.players:
+                if player.health <= 0:  # Skip if the player is already defeated
+                    continue
+                
+                # Apply status effects before the player's turn
+                if not player.apply_status_effects():  # This must happen before the player acts
+
+                    if player.health > 0:  # Allow only alive players to act
+                        print(f"\n{player.name}'s turn!")
+                        action = input("Enter an action: ").strip().lower()
+
+                        if action == 'a':
+                            # Directly target the active creature
+                            target_creature = active_creature
+                            # Calculate hit chance based on luck comparison
+                            miss_chance = 0.15  # Base 5% miss chance for players
+                            if player.luck < target_creature.luck:
+                                luck_diff = target_creature.luck - player.luck
+                                miss_chance += luck_diff * 0.08  # Each point of luck difference adds 8% miss chance
+                                miss_chance = min(miss_chance, 0.75)  # Cap total miss chance at 40%
+                            
+                            # Check if attack misses
+                            if random.random() < miss_chance:
+                                print("\n" * 21)
+                                print(f"\n--- Actions during {player.name}'s turn ---")
+                                print("")
+                                print(f"\n{player.name}'s attack misses {target_creature.name}!")
+                                print(f"{target_creature.name} has {target_creature.health}/{target_creature.max_health} HP remaining!")
+
+                                print("")
+                                # Add the creature's attack message here
+                                if active_creature.health > 0:
+                                    damage_dealt = max(active_creature.damage - player.protection, 0)
+                                    player.health -= damage_dealt
+                                    print(f"{active_creature.name} attacks {player.name} for {damage_dealt} damage after protection!")
+                                    print(f"{player.name}'s Health: {player.health}/{player.max_health}")
+                                print("")
+                                continue
+                            
+                            # Calculate damage considering player's damage stat
+                            damage = player.damage
+
+                            # 20% chance for critical hit
+                            if random.random() <= 0.20:
+                                damage *= 2  # Double the damage
+                                print(f"\n--- !!CRITICAL HIT!! THEIR ATTACK DOES DOUBLE DAMAGE ---")
+                                print(f"\n--- !!CRITICAL HIT!! THEIR ATTACK DOES DOUBLE DAMAGE ---")
+                                print(f"\n--- !!CRITICAL HIT!! THEIR ATTACK DOES DOUBLE DAMAGE ---")
+                            
+                            # Apply damage to creature
+                            target_creature.health -= damage
+                            
+                            # Print attack message
+                            print("\n" * 21)
+                            print(f"\n--- Actions during {player.name}'s turn ---")
+                            print("")
+                            print(f"{player.name} hits for {damage} damage!")
+                            print(f"{target_creature.name} has {target_creature.health}/{target_creature.max_health} HP remaining!")
+                            print("")
+                            # Check if creature is defeated
+                            if target_creature.health <= 0:
+                                print(f"{target_creature.name} is defeated!")
+                                
+                                # Generate and display drops
+                                drops, exp_gained = target_creature.generate_drops()
+                                
+                                # Update total drops
+                                for item, quantity in drops.items():
+                                    self.total_drops[item] = self.total_drops.get(item, 0) + quantity
+                                
+                                self.total_exp += exp_gained
+                                
+                                print(f"Drops gained: {drops}")
+                                print(f"Experience gained: {exp_gained}")
+                                
+                                # Move to next creature
+                                self.current_creature_index += 1
+                                break
+
+
+
+                        elif action == 's':
+                            # Show current stats
+                            print("\n" * 21)
+                            print(f"\n=== {player.name}'s Current Stats ===")
+                            print(f"Health: {player.health}/{player.max_health}")
+                            print(f"Stamina: {player.stamina}/{player.max_stamina}")
+                            print(f"Damage: {player.damage}")
+                            print(f"Protection: {player.protection}")
+                            print(f"Status Effects: {', '.join(player.status_effects) if player.status_effects else 'None'}")
+                            print(f"\n===                               ===")
+                            # Show active creature stats
+                            print(f"\n=== {active_creature.name}'s Stats ===")
+                            print(f"Health: {active_creature.health}/{active_creature.max_health}")
+                            print(f"Damage: {active_creature.damage}")
+                            print(f"\n===                               ===")
+                            
+                            # Allow another action after viewing stats
+                            print(f"\n{player.name}'s turn!")
+                            follow_up_action = input("Choose your action: ").strip().lower()
+    
+                            # Process the follow-up action by recursively calling the same action handling logic
+                            if follow_up_action == 'a':
+                                # Directly target the active creature
+                                target_creature = active_creature
+                                # Calculate hit chance based on luck comparison
+                                miss_chance = 0.15  # Base 5% miss chance for players
+                                if player.luck < target_creature.luck:
+                                    luck_diff = target_creature.luck - player.luck
+                                    miss_chance += luck_diff * 0.08  # Each point of luck difference adds 8% miss chance
+                                    miss_chance = min(miss_chance, 0.75)  # Cap total miss chance at 40%
+                                
+                                # Check if attack misses
+                                if random.random() < miss_chance:
+                                    print("\n" * 21)
+                                    print(f"\n--- Actions during {player.name}'s turn ---")
+                                    print("")
+                                    print(f"\n{player.name}'s attack misses {target_creature.name}!")
+                                    print(f"{target_creature.name} has {target_creature.health}/{target_creature.max_health} HP remaining!")
+                                    print("")
+
+                                    # Add the creature's attack message here
+                                    if active_creature.health > 0:
+                                        damage_dealt = max(active_creature.damage - player.protection, 0)
+                                        player.health -= damage_dealt
+                                        print(f"{active_creature.name} attacks {player.name} for {damage_dealt} damage after protection!")
+                                        print(f"Health: {target.health}")
+                                    print("")
+                                    continue
+                                
+                                # Calculate damage considering player's damage stat
+                                damage = player.damage
+
+                                # 20% chance for critical hit
+                                if random.random() <= 0.20:
+                                    damage *= 2  # Double the damage
+                                    print(f"\n--- !!CRITICAL HIT!! THEIR ATTACK DOES DOUBLE DAMAGE ---")
+                                    print(f"\n--- !!CRITICAL HIT!! THEIR ATTACK DOES DOUBLE DAMAGE ---")
+                                    print(f"\n--- !!CRITICAL HIT!! THEIR ATTACK DOES DOUBLE DAMAGE ---")
+                                
+                                # Apply damage to creature
+                                target_creature.health -= damage
+                                
+                                # Print attack message
+                                print("\n" * 21)
+                                print(f"\n--- Actions during {player.name}'s turn ---")
+                                print("")
+                                print(f"{player.name} hits for {damage} damage!")
+                                print(f"{target_creature.name} has {target_creature.health}/{target_creature.max_health} HP remaining!")
+                                print("")
+                                # Check if creature is defeated
+                                if target_creature.health <= 0:
+                                    print(f"{target_creature.name} is defeated!")
+                                    
+                                    # Generate and display drops
+                                    drops, exp_gained = target_creature.generate_drops()
+                                    
+                                    # Update total drops
+                                    for item, quantity in drops.items():
+                                        self.total_drops[item] = self.total_drops.get(item, 0) + quantity
+                                    
+                                    self.total_exp += exp_gained
+                                    
+                                    print(f"Drops gained: {drops}")
+                                    print(f"Experience gained: {exp_gained}")
+                                    
+                                    # Move to next creature
+                                    self.current_creature_index += 1
+                                    break
+                                
+                                if target_creature.health <= 0:
+                                    print(f"{target_creature.name} is defeated!")
+                                    drops, exp_gained = target_creature.generate_drops()
+                                    for item, quantity in drops.items():
+                                        self.total_drops[item] = self.total_drops.get(item, 0) + quantity
+                                    self.total_exp += exp_gained
+                                    print(f"Drops gained: {drops}")
+                                    print(f"Experience gained: {exp_gained}")
+                                    self.current_creature_index += 1
+                                    break
+                            elif follow_up_action == 't':
+                                target_player = self.choose_target(for_heal=True)
+                                if target_player:
+                                    player.triage(target_player)
+                                
+                            elif follow_up_action == 'as':
+                                target_player = self.choose_target(for_heal=True)
+                                if target_player:
+                                    player.aid_surge(target_player)
+
+                            elif follow_up_action == 'i':
+                                player.iron_bastion()
+
+                            elif follow_up_action == 'f':
+                                player.fortify()
+
+                            elif follow_up_action == 'eh':
+                                target_player = self.choose_target()
+                                if target_player:
+                                    player.emergency_heal(target_player)
+
+                            elif follow_up_action == 'bb':
+                                target_player = self.choose_target()
+                                if target_player:
+                                    player.body_bash(target_player)
+
+                            elif follow_up_action == 'p':
+                                target_player = self.choose_target()
+                                if target_player:
+                                    player.power_attack(target_player)
+
+                            elif follow_up_action == 'cp':
+                                target_player = self.choose_target()
+                                if target_player:
+                                    player.critical_precision(target_player)
+                                    
+                            elif follow_up_action == 'pg':
+                                target_player = self.choose_target()
+                                if target_player:
+                                    player.poison_gas(target_player)
+
+                            elif follow_up_action == 'cb':
+                                target_player = self.choose_target()
+                                if target_player:
+                                    player.crushing_blow(target_player)
+
+                            elif follow_up_action == 'gs':
+                                target_player = self.choose_target()
+                                if target_player:
+                                    player.guardian_slam(target_player)
+
+                            elif follow_up_action == 'r':
+                                target_player = self.choose_target()
+                                if target_player:
+                                    player.ravage(target_player)
+
+                            elif follow_up_action == 'd':
+                                target_player = self.choose_target()
+                                if target_player:
+                                    player.double_strike(target_player)
+
+                            elif follow_up_action == 'ra':
+                                player.rally()
+
+                            elif follow_up_action == 'e':
+                                if self.attempt_escape(player, active_creature):
+                                    return  # End the battle if escape was successful
+                                
+                            elif follow_up_action == 'rn':
+                                self.roar_of_need()
+                                
+                            elif follow_up_action == 'j':
+                                self.join_new_player()
+                                print(f"{player.name} can now take another action.")
+                                break  # Break to allow the player to take an additional action
+
+                            elif follow_up_action == 'ui':
+                                self.use_item(player)  # Correctly pass the player to use_item
+                            
+                            else:
+                                print("Invalid action.")
+                                # Add other action handlers similarly
+                            
+                        elif action == 't':
+                            target_player = self.choose_target(for_heal=True)
+                            if target_player:
+                                player.triage(target_player)
+                                
+                        elif action == 'as':
+                            target_player = self.choose_target(for_heal=True)
+                            if target_player:
+                                player.aid_surge(target_player)
+
+                        elif action == 'i':
+                            player.iron_bastion()
+
+                        elif action == 'f':
+                            player.fortify()
+
+                        elif action == 'eh':
+                            target_player = self.choose_target()
+                            if target_player:
+                                player.emergency_heal(target_player)
+
+                        elif action == 'bb':
+                            target_player = self.choose_target()
+                            if target_player:
+                                player.body_bash(target_player)
+                            
+                        elif action == 'pg':
+                            target_player = self.choose_target()
+                            if target_player:
+                                player.poison_gas(target_player)
+
+                        elif action == 'p':
+                            target_player = self.choose_target()
+                            if target_player:
+                                player.power_attack(target_player)
+
+                        elif action == 'cp':
+                            target_player = self.choose_target()
+                            if target_player:
+                                player.critical_precision(target_player)
+
+                        elif action == 'cb':
+                            target_player = self.choose_target()
+                            if target_player:
+                                player.crushing_blow(target_player)
+
+                        elif action == 'gs':
+                            target_player = self.choose_target()
+                            if target_player:
+                                player.guardian_slam(target_player)
+
+                        elif action == 'r':
+                            target_player = self.choose_target()
+                            if target_player:
+                                player.ravage(target_player)
+
+                        elif action == 'd':
+                            target_player = self.choose_target()
+                            if target_player:
+                                player.double_strike(target_player)
+
+                        elif action == 'ra':
+                            player.rally()
+
+                        elif action == 'e':
+                            if self.attempt_escape(player, active_creature):
+                                return  # End the battle if escape was successful
+                            
+                        elif action == 'rn':
+                            self.roar_of_need()
+                            
+                        elif action == 'j':
+                            self.join_new_player()
+                            print(f"{player.name} can now take another action.")
+                            break  # Break to allow the player to take an additional action
+
+                        elif action == 'ui':
+                            self.use_item(player)  # Correctly pass the player to use_item
+                        
+                        else:
+                            print("Invalid action.")
+
+                # Creature's turn after all players have acted
+                if active_creature.health > 0:
+                    alive_players = [p for p in self.players if p.health > 0]
+                    if not alive_players:  # If there are no alive players left
+                        break
+
+                    target_player = random.choice(alive_players)  # Choose a random alive player
+                    active_creature.attack(player)  # Creatures attack players
+                    
+             # At the end of the battle loop, check if all creatures are defeated
+            if all(creature.health <= 0 for creature in self.creatures):
+                battle_ended = True
+                break
+            
+            # Check if all players are defeated
+            if all(player.health <= 0 for player in self.players):
+                print("All players have been defeated!")
+                battle_ended = True
+                break
+
+        # Call end_battle when the battle is over
+        if battle_ended:
+            self.end_battle()
+
+                    
+
+    def end_battle(self):
+        for player in self.players:
+            player.clear_temp_stats()
+        for player_name, boosts in self.temp_boosts.items():
+            if boosts['damage'] > 0 or boosts['protection'] > 0:
+                player = next(p for p in self.players if p.name == player_name)
+                player.damage -= boosts['damage']
+                player.protection -= boosts['protection']
+                boosts['damage'] = 0
+                boosts['protection'] = 0
+                boosts['turns_remaining'] = 0
+        print("")
+        print("")
+        print("")
+        print("\n--- End of Battle Stats ---")
+        for player in self.players:
+            # Show current player stats
+            status_effects = ','.join(player.status_effects) if player.status_effects else "None"
+            print("")
+            print(f"\n=== PLAYER LINE ===")
+            print(f"{player.name},{player.max_health},{player.health},{player.stamina},{player.max_stamina},{player.luck},{player.protection},{player.light},{player.damage},{status_effects}")
+            print(f"\n=== PLAYER LINE ===")
+            print("")
+            print(f"Health: {player.health}/{player.max_health}")
+            print(f"Stamina: {player.stamina}/{player.max_stamina}")
+            print(f"Damage: {player.damage}")
+            print(f"Protection: {player.protection}")
+            print(f"Status Effects: {', '.join(player.status_effects) if player.status_effects else 'None'}")
+            print("")
+            print("")
+            # Only remove 'daze' status effect after battle
+            if 'daze' in player.status_effects:
+                player.status_effects.remove('daze')
+                print(f"Daze effect removed from {player.name}")
+
+        # Show total drops and EXP from the battle
+        print("\n--- Total Drops Gained ---")
+        if self.total_drops:
+            for item, amount in self.total_drops.items():
+                print(f"{item}: {amount}")
+        else:
+            print("No drops were gained.")
+
+        print(f"Total Experience Gained: {self.total_exp}")
+
+        print("\n--- Items Used During Battle ---")
+        if self.items_used:
+            for item_name, count in self.items_used.items():
+                print(f"{item_name}: {count}")
+        else:
+            print("No items were used.")
+
+
+    def attempt_escape(self, player, active_creature):
+        if random.random() < 0.4:  # 40% chance to escape
+            print(f"{player.name} successfully escaped from {active_creature.name}!")
+            print(f"\n=== PLAYER LINE ===")
+            print(f"{player.name},{player.max_health},{player.health},{player.stamina},{player.max_stamina},{player.luck},{player.protection},{player.light},{player.damage},{status_effects}")
+            print(f"\n=== PLAYER LINE ===")
             return True  # Return True to indicate the battle should end
         else:
             # Calculate damage when escape fails
